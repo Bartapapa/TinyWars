@@ -3,17 +3,46 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class CombatRow
+public class CombatRow : MonoBehaviour
 {
     [Header("MAXIMUM SLOTS")]
-    [SerializeField] private int _maxSlots = 5;
+    private int _maxSlots = -1;
     public int MaxSlots { get { return _maxSlots; } }
 
+    [Header("ROW POSITIONS")]
+    [SerializeField] private Vector3[] _rowPositions;
+    [SerializeField] private float _positionSeparation = 1.2f;
+
+    [Header("FIGHTER SLOTS")]
     [ReadOnlyInspector][SerializeField] private CombatHandler[] _slots;
 
-    public void Initialize()
+    public void Initialize(int maxSlots, List<CombatHandler> team)
     {
-        _slots = new CombatHandler[_maxSlots - 1];
+        if (maxSlots <= 0) return;
+
+        _slots = new CombatHandler[maxSlots];
+        _rowPositions = CreateRowPositions(maxSlots);
+
+        for (int i = 0; i < team.Count; i++)
+        {
+            if (i >= maxSlots) break;
+            else
+            {
+                CombatHandler newFighter = Instantiate<CombatHandler>(team[i], _rowPositions[i], transform.rotation, this.transform);
+                _slots[i] = newFighter;
+            }
+        }
+    }
+
+    private Vector3[] CreateRowPositions(int slots)
+    {
+        Vector3[] positions = new Vector3[slots];
+        for (int i = 0; i < positions.Length; i++)
+        {
+            Vector3 pos = transform.position - (transform.forward * i * _positionSeparation);
+            positions[i] = pos;
+        }
+        return positions;
     }
 
     public CombatHandler GetFighterAtIndex(int index)
@@ -145,6 +174,17 @@ public class CombatRow
             {
                 openSlotInFront = true;
             }
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (_rowPositions.Length < 1) return;
+
+        for (int i = 0; i < _rowPositions.Length; i++)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(_rowPositions[i], 25f);
         }
     }
 }
