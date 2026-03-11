@@ -12,13 +12,13 @@ public class TWAction : ScriptableObject
     public List<GameObject> Targets { get { return _targets; } }
 
     protected CombatHandler _iCombatHandler;
-    protected Dictionary<GameObject, CombatHandler> _tCombatHandlers;
+    protected Dictionary<GameObject, CombatHandler> _tCombatHandlers = new Dictionary<GameObject, CombatHandler>();
 
-    private bool _generated = false;
+    protected bool _generated = false;
 
-    public TWAction GenerateAction (GameObject initiator, List<GameObject> targets)
+    public virtual TWAction GenerateAction (GameObject initiator, List<GameObject> targets)
     {
-        TWAction newAction = ScriptableObject.Instantiate<TWAction>(this);
+        TWAction newAction = CreateInstance<TWAction>();
         newAction._initiator = initiator;
         newAction._targets = targets;
 
@@ -37,10 +37,9 @@ public class TWAction : ScriptableObject
     {
         if (!_generated)
         {
-            Debug.LogWarning("Warning! " + this.name + " has not been properaly generated! Returning.");
+            Debug.LogWarning("Warning! " + this.name + " has not been properly generated! Returning.");
             return;
         }
-
         //Action logic goes here.
     }
 }

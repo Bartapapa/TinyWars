@@ -28,13 +28,19 @@ public class CombatHandler : MonoBehaviour
 
     [Header("COMBAT")]
     [ReadOnlyInspector] [SerializeField] private CombatRow _currentRow;
+    public CombatRow CurrentRow { get { return _currentRow; } }
+
+    private bool _initialized = false;
 
     private void Awake()
     {
-        Initialize();
+        if (!_initialized)
+        {
+            Initialize();
+        }
     }
 
-    private void Initialize()
+    public void Initialize()
     {
         _character = GetComponent<Character>();
         if (!_character)
@@ -60,6 +66,11 @@ public class CombatHandler : MonoBehaviour
             Debug.LogWarning("Warning! " + this.gameObject.name + " has no associated combat data. Returning.");
             return;
         }
+
+        _health.StatisticValueChanged -= OnHealthValueChanged;
+        _health.StatisticValueChanged += OnHealthValueChanged;
+
+        _initialized = true;
     }
 
     private void OnEnable()
@@ -87,6 +98,8 @@ public class CombatHandler : MonoBehaviour
 
         damageDealt = oldTargetHealthValue - target.Health.Value;
 
+        Debug.Log(this.gameObject + " attacked " + target.gameObject + " for " + damageDealt + " damage!");
+
         return damageDealt;
     }
 
@@ -98,6 +111,7 @@ public class CombatHandler : MonoBehaviour
             {
                 EventDispatcher.Instance.Message_HandlerHealthReachedZero(this);
             }
+            Debug.Log(this.gameObject + " died!");
             _tagHandler.AddTag(CombatState.Dead, this);
         }
     }

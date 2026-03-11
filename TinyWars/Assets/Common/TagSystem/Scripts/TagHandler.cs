@@ -7,7 +7,7 @@ using static UnityEngine.Rendering.DebugUI;
 public class TagHandler : MonoBehaviour
 {
     public List<Tag> Tags { get { return _tags; } }
-    [ReadOnlyInspector][SerializeField] private readonly List<Tag> _tags;
+    [ReadOnlyInspector][SerializeField] private readonly List<Tag> _tags = new List<Tag>();
 
     public bool HasTag(Enum tag)
     {

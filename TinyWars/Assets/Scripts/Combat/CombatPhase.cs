@@ -9,7 +9,7 @@ public class CombatPhase
 
     public void EnactAllPhaseActions()
     {
-        foreach(TWAction action in PhaseActions)
+        foreach(TWAction action in _phaseActions)
         {
             action.EnactAction();
         }

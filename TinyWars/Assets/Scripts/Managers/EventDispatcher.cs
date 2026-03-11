@@ -16,7 +16,9 @@ public class EventDispatcher : MonoBehaviour
     public delegate void CombatHandlerEvent(CombatHandler combatHandler);
     public event CombatHandlerEvent HandlerHealthReachedZero;
     public delegate void AttackEvent(CombatHandler attacker, CombatHandler defender, float damageDealt);
-    public event AttackEvent HandlerAttack;
+    public event AttackEvent HandlerAttacked;
+    public delegate void MoveEvent(CombatHandler mover, int toSlotIndex);
+    public event MoveEvent HandlerMoved;
     #endregion
 
     public void Initialize()
@@ -39,7 +41,12 @@ public class EventDispatcher : MonoBehaviour
 
     public void Message_HandlerAttack(CombatHandler attacker, CombatHandler defender, float damageDealt)
     {
-        HandlerAttack?.Invoke(attacker, defender, damageDealt);
+        HandlerAttacked?.Invoke(attacker, defender, damageDealt);
+    }
+
+    public void Message_HandlerMoved(CombatHandler mover, int toSlotIndex)
+    {
+        HandlerMoved?.Invoke(mover, toSlotIndex);
     }
 
     public void Message_HandlerHealthReachedZero(CombatHandler handler)

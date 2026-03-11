@@ -9,7 +9,6 @@ public class GameManager : MonoBehaviour
 
     public static GameManager Instance { get { return _instance; } }
 
-
     [Header("MANAGERS")]
     public EventDispatcher EventDispatcher;
     public CombatManager CombatManager;

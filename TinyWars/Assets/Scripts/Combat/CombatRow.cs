@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 [System.Serializable]
 public class CombatRow : MonoBehaviour
@@ -15,6 +16,7 @@ public class CombatRow : MonoBehaviour
 
     [Header("FIGHTER SLOTS")]
     [ReadOnlyInspector][SerializeField] private CombatHandler[] _slots;
+    public CombatHandler[] Slots { get { return _slots; } }
 
     public void Initialize(int maxSlots, List<CombatHandler> team)
     {
@@ -29,7 +31,9 @@ public class CombatRow : MonoBehaviour
             else
             {
                 CombatHandler newFighter = Instantiate<CombatHandler>(team[i], _rowPositions[i], transform.rotation, this.transform);
+                newFighter.Initialize();
                 newFighter.SetCurrentCombatRow(this);
+                newFighter.gameObject.name = "Fighter " + i;
                 _slots[i] = newFighter;
             }
         }
@@ -39,7 +43,10 @@ public class CombatRow : MonoBehaviour
     {
         for (int i = 0; i < _slots.Length; i++)
         {
-            Destroy(_slots[i].gameObject);
+            if (_slots[i] != null)
+            {
+                Destroy(_slots[i].gameObject);
+            }
         }
 
         _slots = null;
@@ -135,6 +142,15 @@ public class CombatRow : MonoBehaviour
             int fighterIndex = GetFighterSlotIndex(fighter);
             _slots[fighterIndex] = null;
             _slots[toSlotIndex] = fighter;
+
+            fighter.transform.position = _rowPositions[toSlotIndex];
+
+            if (EventDispatcher.Instance)
+            {
+                EventDispatcher.Instance.Message_HandlerMoved(fighter, toSlotIndex);
+            }
+
+            Debug.Log(fighter.gameObject.name + " moved to slot " + toSlotIndex + "!");
         }
     }
 
@@ -147,6 +163,8 @@ public class CombatRow : MonoBehaviour
         _slots[fighter2Slot] = null;
         MoveFighterToSlotIndex(fighter1, fighter2Slot);
         MoveFighterToSlotIndex(fighter2, fighter1Slot);
+
+        Debug.Log(fighter1.gameObject.name + " switched positions with " + fighter1.gameObject.name + "!");
     }
 
     public void MoveFighterUp(CombatHandler fighter)
@@ -179,14 +197,41 @@ public class CombatRow : MonoBehaviour
             {
                 CombatHandler fighter = _slots[i];
                 MoveFighterUp(fighter);
-
-                openSlotInFront = false;
             }
             else
             {
                 openSlotInFront = true;
             }
         }
+    }
+
+    public List<CombatHandler> GetDeadCombatants()
+    {
+        List<CombatHandler> deadCombatants = new List<CombatHandler>();
+
+        foreach(CombatHandler combatant in _slots)
+        {
+            if (combatant != null && combatant.TagHandler.HasTag(CombatState.Dead))
+            {
+                deadCombatants.Add(combatant);
+            }
+        }
+
+        return deadCombatants;
+    }
+
+    public bool AreAllCombatantsDead()
+    {
+        bool areAllDead = true;
+        foreach(CombatHandler combatant in _slots)
+        {
+            if (combatant != null && !combatant.TagHandler.HasTag(CombatState.Dead))
+            {
+                areAllDead = false;
+                break;
+            }
+        }
+        return areAllDead;
     }
 
     private void OnDrawGizmosSelected()
@@ -196,7 +241,7 @@ public class CombatRow : MonoBehaviour
         for (int i = 0; i < _rowPositions.Length; i++)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(_rowPositions[i], 25f);
+            Gizmos.DrawWireSphere(_rowPositions[i], .25f);
         }
     }
 }

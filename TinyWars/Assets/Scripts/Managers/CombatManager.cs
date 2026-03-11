@@ -13,21 +13,25 @@ public class CombatManager : MonoBehaviour
     public CombatRow PlayerCombatRow;
     public CombatRow EnemyCombatRow;
 
+    [Header("UNIVERSAL ACTIONS")]
+    public Action_Attack AttackAction;
+    public Action_ClearCorpse ClearCorpseAction;
+
     [Header("TEST BATTLE")]
     public int MaxSlots = 5;
     public List<CombatHandler> PlayerTeam = new List<CombatHandler>();
     public List<CombatHandler> EnemyTeam = new List<CombatHandler>();
+
+    private Coroutine _phaseSequenceCo = null;
+    public bool UnderGoingPhaseSequence { get { return _phaseSequenceCo != null; } }
+    private float _phaseDuration = 1f;
+    private float _currentPhaseTimer = 0f;
 
     private CombatPhase _currentPhase = null;
     private CombatPhase _nextPhase = null;
 
     public void Initialize()
     {
-        if (GameManager.Instance.CombatManager != null)
-        {
-            Destroy(GameManager.Instance.CombatManager.gameObject);
-        }
-
         GameManager.Instance.CombatManager = this;
         _instance = this;
     }
@@ -45,6 +49,8 @@ public class CombatManager : MonoBehaviour
         PlayerCombatRow.Initialize(5, PlayerTeam);
         EnemyCombatRow.Initialize(5, EnemyTeam);
 
+        StartCombatSequence();
+
         //Have participants, turn by turn, attack each other simultaneously until one side has no more participants.
         //Each 'turn' of combat is deconstructed in Phases, where both Player and Enemy team actions are listed.
         //Phases are lists of actions, and Enemy and Player phase actions are done simultaneously. (All actions of a Phase take the same amount of time to 'enact')
@@ -60,6 +66,100 @@ public class CombatManager : MonoBehaviour
         //EVENTS can call phase checks. The end of a phase check is an event.
         //Clashes, a character dying, a character being hit, a character being healed - all of these can cause phase check requests.
         //If a phase check request is detected, the actions of the following phase are checked - if there are any, generate a phase for both teams.
+    }
+
+    private void StartCombatSequence()
+    {
+        if (PhaseCheck())
+        {
+            _phaseSequenceCo = StartCoroutine(PhaseSequenceCo());
+        }
+        else
+        {
+            //If everyone is dead, end combat.
+            bool playersDead = PlayerCombatRow.AreAllCombatantsDead();
+            bool enemiesDead = EnemyCombatRow.AreAllCombatantsDead();
+            if (playersDead || enemiesDead)
+            {
+                EndCombat();
+                if (playersDead)
+                {
+                    Debug.LogWarning("The players were defeated!");
+                }
+                if (enemiesDead)
+                {
+                    Debug.LogWarning("The enemies were defeated!");
+                }
+                return;
+            }
+
+            //If some combatants are dead, clear their corpses and move everyone alive up.
+            List<CombatHandler> deadPlayercombatants = PlayerCombatRow.GetDeadCombatants();
+            List<CombatHandler> deadEnemycombatants = EnemyCombatRow.GetDeadCombatants();
+            if (deadPlayercombatants.Count > 0 || deadEnemycombatants.Count > 0)
+            {
+                _currentPhase = new CombatPhase();
+                foreach (CombatHandler deadPlayer in deadPlayercombatants)
+                {
+                    TWAction playerClearCorpseAction = ClearCorpseAction.GenerateAction(deadPlayer.gameObject, new List<GameObject>());
+                    _currentPhase.PhaseActions.Add(playerClearCorpseAction);
+                }
+
+                foreach (CombatHandler deadEnemy in deadEnemycombatants)
+                {
+                    TWAction enemyClearCorpseAction = ClearCorpseAction.GenerateAction(deadEnemy.gameObject, new List<GameObject>());
+                    _currentPhase.PhaseActions.Add(enemyClearCorpseAction);
+                }
+
+                _phaseSequenceCo = StartCoroutine(PhaseSequenceCo());
+
+                PlayerCombatRow.MoveAllFightersUp();
+                EnemyCombatRow.MoveAllFightersUp();
+            }      
+            else
+            {
+                //Otherwise, attack and proceed as normal.
+
+                _currentPhase = new CombatPhase();
+                List<GameObject> playerTarget = new List<GameObject>();
+                playerTarget.Add(EnemyCombatRow.Slots[0].gameObject);
+                List<GameObject> enemyTarget = new List<GameObject>();
+                enemyTarget.Add(PlayerCombatRow.Slots[0].gameObject);
+                TWAction playerAttackAction = AttackAction.GenerateAction(PlayerCombatRow.Slots[0].gameObject, playerTarget);
+                TWAction enemyAttackAction = AttackAction.GenerateAction(EnemyCombatRow.Slots[0].gameObject, enemyTarget);
+                _currentPhase.PhaseActions.Add(playerAttackAction);
+                _currentPhase.PhaseActions.Add(enemyAttackAction);
+
+                _phaseSequenceCo = StartCoroutine(PhaseSequenceCo());
+            }
+        }
+    }
+
+    private bool PhaseCheck()
+    {
+        bool proceedToNextPhase = false;
+        if (_nextPhase != null)
+        {
+            _currentPhase = _nextPhase;
+            _nextPhase = null;
+        }
+
+        return proceedToNextPhase;
+    }
+
+    private IEnumerator PhaseSequenceCo()
+    {
+        _currentPhase.EnactAllPhaseActions();
+        _currentPhaseTimer = _phaseDuration;
+
+        while (_currentPhaseTimer > 0f)
+        {
+            _currentPhaseTimer -= Time.deltaTime;
+            yield return null;
+        }
+
+        _phaseSequenceCo = null;
+        StartCombatSequence();
     }
 
     public void EndCombat()

@@ -1,14 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
-[CreateAssetMenu(menuName = "TinyWars/Action/Attack", fileName = "Attack_ActionData")]
-public class Action_Attack : TWAction
+[CreateAssetMenu(menuName = "TinyWars/Action/ClearCorpse", fileName = "ClearCorpse_ActionData")]
+public class Action_ClearCorpse : TWAction
 {
     public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets)
     {
-        Action_Attack newAction = CreateInstance<Action_Attack>();
+        Action_ClearCorpse newAction = CreateInstance<Action_ClearCorpse>();
         newAction._initiator = initiator;
         newAction._targets = targets;
 
@@ -27,13 +26,13 @@ public class Action_Attack : TWAction
     {
         base.EnactAction();
 
-        foreach(CombatHandler target in _tCombatHandlers.Values)
-        {
-            float damageDealt = _iCombatHandler.DamageTarget(target);
-            if (EventDispatcher.Instance)
-            {
-                EventDispatcher.Instance.Message_HandlerAttack(_iCombatHandler, target, damageDealt);
-            }
-        }
+        //Play corpse animation.
+
+        //Clear currently occupied slot.
+        int currentSlot = _iCombatHandler.CurrentRow.GetFighterSlotIndex(_iCombatHandler);
+        _iCombatHandler.CurrentRow.Slots[currentSlot] = null;
+
+        //TODO: Remove this later.
+        Destroy(Initiator);
     }
 }
