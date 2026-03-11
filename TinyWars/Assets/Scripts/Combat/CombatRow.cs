@@ -29,9 +29,21 @@ public class CombatRow : MonoBehaviour
             else
             {
                 CombatHandler newFighter = Instantiate<CombatHandler>(team[i], _rowPositions[i], transform.rotation, this.transform);
+                newFighter.SetCurrentCombatRow(this);
                 _slots[i] = newFighter;
             }
         }
+    }
+
+    public void ClearRow()
+    {
+        for (int i = 0; i < _slots.Length; i++)
+        {
+            Destroy(_slots[i].gameObject);
+        }
+
+        _slots = null;
+        _rowPositions = null;
     }
 
     private Vector3[] CreateRowPositions(int slots)

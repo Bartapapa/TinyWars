@@ -18,32 +18,29 @@ public class CombatManager : MonoBehaviour
     public List<CombatHandler> PlayerTeam = new List<CombatHandler>();
     public List<CombatHandler> EnemyTeam = new List<CombatHandler>();
 
+    private CombatPhase _currentPhase = null;
+    private CombatPhase _nextPhase = null;
 
-    public void Awake()
+    public void Initialize()
     {
-        if (!_instance)
+        if (GameManager.Instance.CombatManager != null)
         {
-            lock (_lockingObject)
-            {
-                if (!_instance)
-                {
-                    _instance = this;
-                }
-            }
+            Destroy(GameManager.Instance.CombatManager.gameObject);
         }
-        else
-        {
-            Destroy(this.gameObject);
-        }
-    }
 
-    private void Start()
-    {
-        StartCombat();
+        GameManager.Instance.CombatManager = this;
+        _instance = this;
     }
 
     public void StartCombat()
     {
+        //Listen for action call events.
+        if (EventDispatcher.Instance != null)
+        {
+            EventDispatcher.Instance.ActionCalled -= OnActionCalled;
+            EventDispatcher.Instance.ActionCalled += OnActionCalled;
+        }
+
         //Place participants into corresponding rows.
         PlayerCombatRow.Initialize(5, PlayerTeam);
         EnemyCombatRow.Initialize(5, EnemyTeam);
@@ -63,5 +60,30 @@ public class CombatManager : MonoBehaviour
         //EVENTS can call phase checks. The end of a phase check is an event.
         //Clashes, a character dying, a character being hit, a character being healed - all of these can cause phase check requests.
         //If a phase check request is detected, the actions of the following phase are checked - if there are any, generate a phase for both teams.
+    }
+
+    public void EndCombat()
+    {
+        //Stop listening for action call events.
+        if (EventDispatcher.Instance != null)
+        {
+            EventDispatcher.Instance.ActionCalled -= OnActionCalled;
+        }
+
+        //Remove combatants from combat.
+        PlayerCombatRow.ClearRow();
+        EnemyCombatRow.ClearRow();
+    }
+
+    private void OnActionCalled(TWAction action)
+    {
+        //If no next phase has been created yet, make one.
+        if (_nextPhase == null)
+        {
+            _nextPhase = new CombatPhase();
+        }
+
+        //Add action to next phase's list of actions.
+        _nextPhase.PhaseActions.Add(action);
     }
 }

@@ -11,13 +11,15 @@ public class EventDispatcher : MonoBehaviour
     public static EventDispatcher Instance { get { return _instance; } }
 
     #region Events
+    public delegate void ActionEvent(TWAction action);
+    public event ActionEvent ActionCalled;
     public delegate void CombatHandlerEvent(CombatHandler combatHandler);
     public event CombatHandlerEvent HandlerHealthReachedZero;
     public delegate void AttackEvent(CombatHandler attacker, CombatHandler defender, float damageDealt);
     public event AttackEvent HandlerAttack;
     #endregion
 
-    public void Awake()
+    public void Initialize()
     {
         if (!_instance)
         {
@@ -43,5 +45,10 @@ public class EventDispatcher : MonoBehaviour
     public void Message_HandlerHealthReachedZero(CombatHandler handler)
     {
         HandlerHealthReachedZero?.Invoke(handler);
+    }
+
+    public void Message_ActionCalled(TWAction action)
+    {
+        ActionCalled?.Invoke(action);
     }
 }

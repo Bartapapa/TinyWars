@@ -24,7 +24,10 @@ public class CombatHandler : MonoBehaviour
     [SerializeField] private Statistic _attack;
 
     public Statistic Health { get { return _health; } }
-    public Statistic Damage { get { return _attack; } }
+    public Statistic Attack { get { return _attack; } }
+
+    [Header("COMBAT")]
+    [ReadOnlyInspector] [SerializeField] private CombatRow _currentRow;
 
     private void Awake()
     {
@@ -70,14 +73,21 @@ public class CombatHandler : MonoBehaviour
         _health.StatisticValueChanged -= OnHealthValueChanged;
     }
 
-    public void DamageTarget(CombatHandler target)
+    public void SetCurrentCombatRow(CombatRow row)
     {
+        _currentRow = row;
+    }
+
+    public float DamageTarget(CombatHandler target)
+    {
+        float damageDealt = 0;
+        float oldTargetHealthValue = target.Health.Value;
+
         target.Health.AddModifier(new StatisticModifier(_attack.Value * -1, StatisticModifierType.Flat, ModifierApplicationType.Permanent, this));
 
-        if (EventDispatcher.Instance)
-        {
-            EventDispatcher.Instance.Message_HandlerAttack(this, target, _attack.Value);
-        }
+        damageDealt = oldTargetHealthValue - target.Health.Value;
+
+        return damageDealt;
     }
 
     private void OnHealthValueChanged (float from, float to)
