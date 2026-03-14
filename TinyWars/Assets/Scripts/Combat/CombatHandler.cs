@@ -35,6 +35,15 @@ public class CombatHandler : MonoBehaviour
     [ReadOnlyInspector] [SerializeField] private CombatRow _currentRow;
     public CombatRow CurrentRow { get { return _currentRow; } }
 
+    [Header("PROJECTILE")]
+    [SerializeField] private Projectile _projectile;
+    public Projectile Projectile { get { return _projectile; } }
+    [SerializeField] private Transform _projectileSpawn;
+    public Transform ProjectileSPawn { get { return _projectileSpawn; } }
+    [SerializeField] private AnimationCurve _projectileParabolaCurve = new AnimationCurve();
+    [SerializeField] private float _heightIntensity = 1f;
+    [SerializeField] private AnimationCurve _projectileLateralPositionCurve = new AnimationCurve();
+
     [Header("MOVING IN COMBAT")]
     [SerializeField] private AnimationCurve _moveCurve = new AnimationCurve();
     public bool IsMoving { get { return _moveCo != null; } }
@@ -105,7 +114,7 @@ public class CombatHandler : MonoBehaviour
         _currentRow = row;
     }
 
-    public void AttackTargets(List<CombatHandler> targets, float delay = 0f)
+    public void AttackTargets(List<CombatHandler> targets, float delay = 0f, bool useProjectile = false)
     {
         if (delay >= 0f)
         {
@@ -114,7 +123,16 @@ public class CombatHandler : MonoBehaviour
                 StopCoroutine(_attackCo);
                 _attackCo = null;
             }
-            _attackCo = StartCoroutine(AttackCo(targets, delay*GameManager.Instance.ActionTime));
+
+            if (useProjectile)
+            {
+                _attackCo = StartCoroutine(ProjectileCo(targets, delay * GameManager.Instance.ActionTime));
+            }
+            else
+            {
+                _attackCo = StartCoroutine(AttackCo(targets, delay * GameManager.Instance.ActionTime));
+            }
+            
         }
         else
         {
@@ -154,10 +172,12 @@ public class CombatHandler : MonoBehaviour
         {
             if (to <= 0)
             {
-                DamageShake(.3f, _deathShakeIntensityCurve);
+                _animHandler.PlayAnimation("Die");
+                DamageShake(.6f, _deathShakeIntensityCurve);
             }
             else
             {
+                _animHandler.PlayAdditiveAnimation("Hurt", 1);
                 DamageShake(.2f, _damageShakeIntensityCurve);
             }
         }
@@ -254,7 +274,49 @@ public class CombatHandler : MonoBehaviour
         }
         
         _attackCo = null;
+
         foreach(CombatHandler target in targets)
+        {
+            DamageTarget(target);
+        }
+    }
+
+    private IEnumerator ProjectileCo(List<CombatHandler> targets, float delay)
+    {
+        float currentDelayTimer = 0f;
+
+        List<Projectile> projectiles = new List<Projectile>();
+        foreach (CombatHandler target in targets)
+        {
+            Projectile newProjecitle = Instantiate<Projectile>(_projectile, _projectileSpawn.position, this.transform.rotation, this.transform);
+            newProjecitle.Target = target.transform;
+
+            projectiles.Add(newProjecitle);
+        }
+
+        float alpha = 0f;
+        float lateralAlpha = 0f;
+        Vector3 originalPosition = _projectileSpawn.position;
+
+        while (currentDelayTimer <= delay)
+        {
+            currentDelayTimer += Time.deltaTime;
+            alpha = currentDelayTimer / delay;
+            lateralAlpha = _projectileLateralPositionCurve.Evaluate(alpha);
+            foreach(Projectile projectile in projectiles)
+            {
+                float height = _heightIntensity * _projectileParabolaCurve.Evaluate(alpha);
+                projectile.transform.position = Vector3.Lerp(originalPosition, projectile.Target.position + projectile.Target.up, lateralAlpha) + new Vector3(0, height, 0);
+            }
+            yield return null;
+        }
+
+        for (int i = projectiles.Count-1; i >= 0; i--)
+        {
+            Destroy(projectiles[i].gameObject);
+        }
+
+        foreach (CombatHandler target in targets)
         {
             DamageTarget(target);
         }

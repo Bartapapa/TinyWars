@@ -26,7 +26,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1418901528616774016}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -178,6 +178,37 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &2993557433654263035
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6992897973319698996}
+  m_Layer: 0
+  m_Name: ProjectileSpawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6992897973319698996
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2993557433654263035}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 3.25, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 418589555528629680}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3608288018711024056
 GameObject:
   m_ObjectHideFlags: 0
@@ -348,6 +379,76 @@ MonoBehaviour:
     _value: 0
     _baseValue: 0
   _currentRow: {fileID: 0}
+  _projectile: {fileID: 642976124884783857, guid: 4c970b5b91ae0954ebe28766e272bb7f,
+    type: 3}
+  _projectileSpawn: {fileID: 6992897973319698996}
+  _projectileParabolaCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.5
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.1873684
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: -2.7306912
+      outSlope: -2.7306912
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.033684194
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _heightIntensity: 1.5
+  _projectileLateralPositionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.64016175
+      outSlope: 0.64016175
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.14799167
+    - serializedVersion: 3
+      time: 0.4978943
+      value: 0.5
+      inSlope: 1.537631
+      outSlope: 1.537631
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.11323771
+      outWeight: 0.10691902
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0.41401738
+      outSlope: 0.41401738
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.19368422
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   _moveCurve:
     serializedVersion: 2
     m_Curve:
@@ -676,5 +777,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8144984248227988300}
+  - {fileID: 6992897973319698996}
   m_Father: {fileID: 1052123603403092120}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}

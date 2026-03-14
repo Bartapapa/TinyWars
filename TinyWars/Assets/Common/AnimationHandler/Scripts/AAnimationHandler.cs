@@ -16,4 +16,9 @@ public abstract class AAnimationHandler : MonoBehaviour
     {
         _anim.CrossFade(stateName, transitionDuration);
     }
+
+    public void PlayAdditiveAnimation(string stateName, int layer)
+    {
+        _anim.Play(stateName, layer);
+    }
 }

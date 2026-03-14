@@ -23,18 +23,24 @@ public class Ability_LittleCrow_RandomDamage : TWAbility
     {
         base.OnMessage_FighterDamagedDefender(context);
 
-        //Check if defender is the user of this ability's abilityHandler.
+        //Check if defender is the user of this ability's abilityHandler and isn't dead.
         if (context.Defender.gameObject != _abilityHandler.gameObject) return;
+        if (context.Defender.TagHandler.HasTag(CombatState.Dead)) return;
 
         //If true, generate an action of AttackRandomEnemyTarget, which uses defender.AttackTargets to attack a random living enemy from the attacker's current row.
-        GameObject randomTarget = null;
-        List<CombatHandler> targets = context.Attacker.CurrentRow.GetCurrentFighters(true);
+        //GameObject randomTarget = null;
+        List<CombatHandler> targets = context.Attacker.CurrentRow.GetCurrentFighters();
         if (targets.Count <= 0) return;
-
-        int randomInt = Random.Range(0, targets.Count);
-        randomTarget = targets[randomInt].gameObject;
         List<GameObject> target = new List<GameObject>();
-        target.Add(randomTarget);
+
+        foreach (CombatHandler livingEnemy in targets)
+        {
+            target.Add(livingEnemy.gameObject);
+        }
+
+        //int randomInt = Random.Range(0, targets.Count);
+        //randomTarget = targets[randomInt].gameObject;
+        //target.Add(randomTarget);
 
         foreach(TWAction action in _abilityActions)
         {

@@ -28,12 +28,19 @@ public class Action_AttackRandomEnemyTarget : TWAction
     {
         base.EnactAction();
 
-        Debug.Log(444);
-        _iCombatHandler.AttackTargets(_tCombatHandlers.Values.ToList<CombatHandler>(), .66f);
+        _iCombatHandler.AnimationHandler.PlayAnimationWithBlend("Cast1");
+
+        List<CombatHandler> target = new List<CombatHandler>();
+        CombatRow enemyRow = _tCombatHandlers[_targets[0]].CurrentRow;
+        List<CombatHandler> aliveTargets = enemyRow.GetCurrentFighters(true);
+        int randomInt = Random.Range(0, aliveTargets.Count);
+        CombatHandler randomTarget = aliveTargets[randomInt];
+        target.Add(randomTarget);
+
+        _iCombatHandler.AttackTargets(target, .66f, true);
 
         if (EventDispatcher.Instance)
         {
-            Debug.Log(555);
             AttackContext context = new AttackContext(_iCombatHandler);
             EventDispatcher.Instance.Message_FighterAttacked(ref context);
         }

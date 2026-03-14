@@ -11,7 +11,7 @@ public class CombatPhase
     {
         foreach(TWAction action in _phaseActions)
         {
-            action.EnactAction();
+            action.EnactAction();          
         }
     }
 }

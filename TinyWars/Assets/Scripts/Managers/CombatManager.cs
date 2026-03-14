@@ -70,7 +70,6 @@ public class CombatManager : MonoBehaviour
     {
         if (PhaseCheck())
         {
-            Debug.Log(333);
             _phaseSequenceCo = StartCoroutine(PhaseSequenceCo());
         }
         else
@@ -122,7 +121,6 @@ public class CombatManager : MonoBehaviour
             else
             {
                 //Otherwise, attack and proceed as normal.
-
                 _currentPhase = new CombatPhase();
                 List<GameObject> playerTarget = new List<GameObject>();
                 playerTarget.Add(EnemyCombatRow.Slots[0].gameObject);

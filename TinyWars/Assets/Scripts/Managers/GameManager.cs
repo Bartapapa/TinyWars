@@ -36,12 +36,12 @@ public class GameManager : MonoBehaviour
         {
             Destroy(this.gameObject);
         }
+
+        InitializeAllManagers();
     }
 
     private void Start()
     {
-        InitializeAllManagers();
-
         CombatManager.StartCombat();
     }
 

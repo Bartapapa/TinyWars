@@ -12,7 +12,9 @@ public class TWAction : ScriptableObject
     public List<GameObject> Targets { get { return _targets; } }
 
     protected CombatHandler _iCombatHandler;
+    public CombatHandler ICombatHandler { get { return _iCombatHandler; } }
     protected Dictionary<GameObject, CombatHandler> _tCombatHandlers = new Dictionary<GameObject, CombatHandler>();
+    public Dictionary<GameObject, CombatHandler> TCombatHandler { get { return _tCombatHandlers; } }
 
     protected bool _generated = false;
 

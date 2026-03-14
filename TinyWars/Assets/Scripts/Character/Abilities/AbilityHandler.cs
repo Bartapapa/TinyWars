@@ -12,9 +12,9 @@ public class AbilityHandler : MonoBehaviour
     [SerializeField] [ReadOnlyInspector] private List<TWAbility> _abilities = new List<TWAbility>();
     public List<TWAbility> Abilities { get { return _abilities; } }
 
-    private void Awake()
+    private void Start()
     {
-        foreach(TWAbility ability in _startingAbilities)
+        foreach (TWAbility ability in _startingAbilities)
         {
             AddAbility(ability);
         }
