@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76d470003f8405748bd1cedba38895e7, type: 3}
+  m_Name: GhostFox_SpawnGhost_AbilityData
+  m_EditorClassIdentifier: 
+  _internalName: ghostFox_spawnGhost
+  _listenedMessages: 07000000
+  _abilityActions:
+  - {fileID: 11400000, guid: 1d8e87f75e7abfc49a258bf33ba7032d, type: 2}

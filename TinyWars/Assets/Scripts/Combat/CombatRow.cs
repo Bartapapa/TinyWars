@@ -30,13 +30,25 @@ public class CombatRow : MonoBehaviour
             if (i >= maxSlots) break;
             else
             {
-                CombatHandler newFighter = Instantiate<CombatHandler>(team[i], _rowPositions[i], transform.rotation, this.transform);
-                newFighter.Initialize();
-                newFighter.SetCurrentCombatRow(this);
-                newFighter.gameObject.name = "Fighter " + i;
-                _slots[i] = newFighter;
+                InitializeFighter(team[i], i);
+                //CombatHandler newFighter = Instantiate<CombatHandler>(team[i], _rowPositions[i], transform.rotation, this.transform);
+                //newFighter.Initialize();
+                //newFighter.SetCurrentCombatRow(this);
+                //newFighter.gameObject.name = "Fighter " + i;
+                //_slots[i] = newFighter;
             }
         }
+    }
+
+    private CombatHandler InitializeFighter(CombatHandler fighter, int slotIndex)
+    {
+        CombatHandler newFighter = Instantiate<CombatHandler>(fighter, _rowPositions[slotIndex], transform.rotation, this.transform);
+        newFighter.Initialize();
+        newFighter.SetCurrentCombatRow(this);
+        newFighter.gameObject.name = "Fighter " + slotIndex;
+        _slots[slotIndex] = newFighter;
+
+        return newFighter;
     }
 
     public void ClearRow()
@@ -231,6 +243,24 @@ public class CombatRow : MonoBehaviour
                 openSlotInFront = true;
             }
         }
+    }
+
+    public bool SpawnFighter(CombatHandler originalFighter, int atSlot)
+    {
+        //If slot isn't empty, don't spawn.
+        if (_slots[atSlot] != null) return false;
+        else
+        {
+            CombatHandler newFighter = InitializeFighter(originalFighter, atSlot);
+            newFighter.AnimationHandler.PlayAnimationWithBlend("Spawn");
+            MoveFighterUp(newFighter);
+            if (EventDispatcher.Instance)
+            {
+                MoveContext newContext = new MoveContext(newFighter, this, atSlot);
+                EventDispatcher.Instance.Message_FighterSpawned(ref newContext);
+            }
+        }
+        return true;
     }
 
     public List<CombatHandler> GetDeadCombatants()

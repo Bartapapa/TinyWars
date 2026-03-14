@@ -86,4 +86,22 @@ public class TWAbility : ScriptableObject
             return;
         }
     }
+
+    public virtual void OnMessage_FighterSpawned(MoveContext context)
+    {
+        if (!_generated)
+        {
+            Debug.LogWarning("Warning! " + this.name + " has not been properly generated. Returning.");
+            return;
+        }
+    }
+
+    public virtual void OnMessage_FighterCorpseCleared(FighterContext context)
+    {
+        if (!_generated)
+        {
+            Debug.LogWarning("Warning! " + this.name + " has not been properly generated. Returning.");
+            return;
+        }
+    }
 }

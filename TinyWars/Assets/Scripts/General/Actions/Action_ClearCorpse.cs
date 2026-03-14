@@ -37,6 +37,12 @@ public class Action_ClearCorpse : TWAction
         int currentSlot = _iCombatHandler.CurrentRow.GetFighterSlotIndex(_iCombatHandler);
         _iCombatHandler.CurrentRow.Slots[currentSlot] = null;
 
+        if (EventDispatcher.Instance)
+        {
+            FighterContext context = new FighterContext(_iCombatHandler);
+            EventDispatcher.Instance.Message_FighterCorpseCleared(ref context);
+        }
+
         //TODO: Remove this later.
         //Destroy(Initiator);
     }

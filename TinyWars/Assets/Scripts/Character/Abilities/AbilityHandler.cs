@@ -63,6 +63,14 @@ public class AbilityHandler : MonoBehaviour
                     EventDispatcher.Instance.FighterMoved -= ability.OnMessage_FighterMoved;
                     EventDispatcher.Instance.FighterMoved += ability.OnMessage_FighterMoved;
                     break;
+                case EventMessageType.FighterSpawned:
+                    EventDispatcher.Instance.FighterMoved -= ability.OnMessage_FighterSpawned;
+                    EventDispatcher.Instance.FighterMoved += ability.OnMessage_FighterSpawned;
+                    break;
+                case EventMessageType.FighterCorpseCleared:
+                    EventDispatcher.Instance.FighterCorpseCleared -= ability.OnMessage_FighterCorpseCleared;
+                    EventDispatcher.Instance.FighterCorpseCleared += ability.OnMessage_FighterCorpseCleared;
+                    break;
                 default:
                     break;
             }
