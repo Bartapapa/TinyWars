@@ -3,6 +3,69 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
+public enum EventMessageType
+{
+    None,
+    ActionCalled,
+    FighterHealthReachedZero,
+    FighterAttacked,
+    FighterDamagedDefender,
+    FighterMoved,
+}
+
+public struct ActionContext
+{
+    public TWAction Action;
+
+    public ActionContext(TWAction action)
+    {
+        Action = action;
+    }
+}
+
+public struct FighterContext
+{
+    public CombatHandler Fighter;
+
+    public FighterContext(CombatHandler fighter)
+    {
+        Fighter = fighter;
+    }
+}
+
+public struct AttackContext
+{
+    public CombatHandler Attacker;
+    public CombatHandler Defender;
+    public float DamageDealt;
+
+    public AttackContext(CombatHandler attacker, CombatHandler defender, float damageDealt)
+    {
+        Attacker = attacker;
+        Defender = defender;
+        DamageDealt = damageDealt;
+    }
+
+    public AttackContext(CombatHandler attacker) : this(attacker, null, 0f) { }
+    public AttackContext(CombatHandler attacker, CombatHandler defender) : this(attacker, defender, 0f) { }
+}
+
+public struct MoveContext
+{
+    public CombatHandler Mover;
+    public CombatRow Row;
+    public int ToSlotIndex;
+
+    public MoveContext(CombatHandler mover, CombatRow row, int toSlotIndex)
+    {
+        Mover = mover;
+        Row = row;
+        ToSlotIndex = toSlotIndex;
+    }
+
+    public MoveContext(CombatHandler mover, int toSlotIndex) : this(mover, null, toSlotIndex) { }
+}
+
 public class EventDispatcher : MonoBehaviour
 {
     private static object _lockingObject = new object();
@@ -11,14 +74,19 @@ public class EventDispatcher : MonoBehaviour
     public static EventDispatcher Instance { get { return _instance; } }
 
     #region Events
-    public delegate void ActionEvent(TWAction action);
+
+    //Replace event arguments with multiple struct types relaying bits of information.
+    //Such as 'DamageContext' struct, 'DeathContext' struct, etc etc...
+
+    public delegate void ActionEvent(ActionContext context);
     public event ActionEvent ActionCalled;
-    public delegate void CombatHandlerEvent(CombatHandler combatHandler);
-    public event CombatHandlerEvent HandlerHealthReachedZero;
-    public delegate void AttackEvent(CombatHandler attacker, CombatHandler defender, float damageDealt);
-    public event AttackEvent HandlerAttacked;
-    public delegate void MoveEvent(CombatHandler mover, int toSlotIndex);
-    public event MoveEvent HandlerMoved;
+    public delegate void FighterEvent(FighterContext context);
+    public event FighterEvent FighterHealthReachedZero;
+    public delegate void AttackEvent(AttackContext context);
+    public event AttackEvent FighterAttacked;
+    public event AttackEvent FighterDamagedDefender;
+    public delegate void MoveEvent(MoveContext context);
+    public event MoveEvent FighterMoved;
     #endregion
 
     public void Initialize()
@@ -39,23 +107,28 @@ public class EventDispatcher : MonoBehaviour
         }
     }
 
-    public void Message_HandlerAttack(CombatHandler attacker, CombatHandler defender, float damageDealt)
+    public void Message_FighterAttacked(ref AttackContext context)
     {
-        HandlerAttacked?.Invoke(attacker, defender, damageDealt);
+        FighterAttacked?.Invoke(context);
     }
 
-    public void Message_HandlerMoved(CombatHandler mover, int toSlotIndex)
+    public void Message_FighterDamagedDefender(ref AttackContext context)
     {
-        HandlerMoved?.Invoke(mover, toSlotIndex);
+        FighterDamagedDefender?.Invoke(context);
     }
 
-    public void Message_HandlerHealthReachedZero(CombatHandler handler)
+    public void Message_FighterMoved(ref MoveContext context)
     {
-        HandlerHealthReachedZero?.Invoke(handler);
+        FighterMoved?.Invoke(context);
     }
 
-    public void Message_ActionCalled(TWAction action)
+    public void Message_FighterHealthReachedZero(ref FighterContext context)
     {
-        ActionCalled?.Invoke(action);
+        FighterHealthReachedZero?.Invoke(context);
+    }
+
+    public void Message_ActionCalled(ref ActionContext context)
+    {
+        ActionCalled?.Invoke(context);
     }
 }

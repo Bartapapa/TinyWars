@@ -24,8 +24,6 @@ public class CombatManager : MonoBehaviour
 
     private Coroutine _phaseSequenceCo = null;
     public bool UnderGoingPhaseSequence { get { return _phaseSequenceCo != null; } }
-    private float _phaseDuration = 1f;
-    private float _currentPhaseTimer = 0f;
 
     private CombatPhase _currentPhase = null;
     private CombatPhase _nextPhase = null;
@@ -46,8 +44,8 @@ public class CombatManager : MonoBehaviour
         }
 
         //Place participants into corresponding rows.
-        PlayerCombatRow.Initialize(5, PlayerTeam);
-        EnemyCombatRow.Initialize(5, EnemyTeam);
+        PlayerCombatRow.Initialize(MaxSlots, PlayerTeam);
+        EnemyCombatRow.Initialize(MaxSlots, EnemyTeam);
 
         StartCombatSequence();
 
@@ -72,23 +70,28 @@ public class CombatManager : MonoBehaviour
     {
         if (PhaseCheck())
         {
+            Debug.Log(333);
             _phaseSequenceCo = StartCoroutine(PhaseSequenceCo());
         }
         else
         {
-            //If everyone is dead, end combat.
-            bool playersDead = PlayerCombatRow.AreAllCombatantsDead();
-            bool enemiesDead = EnemyCombatRow.AreAllCombatantsDead();
-            if (playersDead || enemiesDead)
+            //If everyone dead is cleared, end combat.
+            bool playersCleared = PlayerCombatRow.AreAllCombatantsCleared();
+            bool enemiesCleared = EnemyCombatRow.AreAllCombatantsCleared();
+            if (playersCleared || enemiesCleared)
             {
                 EndCombat();
-                if (playersDead)
+                if (playersCleared && !enemiesCleared)
                 {
                     Debug.LogWarning("The players were defeated!");
                 }
-                if (enemiesDead)
+                else if (enemiesCleared && !playersCleared)
                 {
                     Debug.LogWarning("The enemies were defeated!");
+                }
+                else if (enemiesCleared && playersCleared)
+                {
+                    Debug.LogWarning("Everyone was defeated! It was a tie!");
                 }
                 return;
             }
@@ -142,6 +145,7 @@ public class CombatManager : MonoBehaviour
         {
             _currentPhase = _nextPhase;
             _nextPhase = null;
+            proceedToNextPhase = true;
         }
 
         return proceedToNextPhase;
@@ -150,11 +154,11 @@ public class CombatManager : MonoBehaviour
     private IEnumerator PhaseSequenceCo()
     {
         _currentPhase.EnactAllPhaseActions();
-        _currentPhaseTimer = _phaseDuration;
+        float currentPhaseTimer = GameManager.Instance.ActionTime;
 
-        while (_currentPhaseTimer > 0f)
+        while (currentPhaseTimer > 0f)
         {
-            _currentPhaseTimer -= Time.deltaTime;
+            currentPhaseTimer -= Time.deltaTime;
             yield return null;
         }
 
@@ -175,15 +179,14 @@ public class CombatManager : MonoBehaviour
         EnemyCombatRow.ClearRow();
     }
 
-    private void OnActionCalled(TWAction action)
+    private void OnActionCalled(ActionContext context)
     {
         //If no next phase has been created yet, make one.
         if (_nextPhase == null)
         {
             _nextPhase = new CombatPhase();
         }
-
         //Add action to next phase's list of actions.
-        _nextPhase.PhaseActions.Add(action);
+        _nextPhase.PhaseActions.Add(context.Action);
     }
 }

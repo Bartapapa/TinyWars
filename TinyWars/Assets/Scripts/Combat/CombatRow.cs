@@ -83,6 +83,30 @@ public class CombatRow : MonoBehaviour
         return foundIndex;
     }
 
+    public List<CombatHandler> GetCurrentFighters(bool mustBeLiving = true)
+    {
+        List<CombatHandler> currentFighters = new List<CombatHandler>();
+        for (int i = 0; i < _slots.Length -1; i++)
+        {
+            if (_slots[i] != null)
+            {
+                if (mustBeLiving)
+                {
+                    if (!_slots[i].TagHandler.HasTag(CombatState.Dead))
+                    {
+                        currentFighters.Add(_slots[i]);
+                    }
+                }
+                else
+                {
+                    currentFighters.Add(_slots[i]);
+                }
+            }
+        }
+
+        return currentFighters;
+    }
+
     public void PlaceFighterAtSlot(CombatHandler fighter, int i)
     {
         if (i >= _slots.Length || i < 0) return;
@@ -143,11 +167,13 @@ public class CombatRow : MonoBehaviour
             _slots[fighterIndex] = null;
             _slots[toSlotIndex] = fighter;
 
-            fighter.transform.position = _rowPositions[toSlotIndex];
+            //Move fighter to new position
+            fighter.MoveToPosition(_rowPositions[toSlotIndex]);
 
             if (EventDispatcher.Instance)
             {
-                EventDispatcher.Instance.Message_HandlerMoved(fighter, toSlotIndex);
+                MoveContext context = new MoveContext(fighter, this, toSlotIndex);
+                EventDispatcher.Instance.Message_FighterMoved(ref context);
             }
 
             Debug.Log(fighter.gameObject.name + " moved to slot " + toSlotIndex + "!");
@@ -197,6 +223,8 @@ public class CombatRow : MonoBehaviour
             {
                 CombatHandler fighter = _slots[i];
                 MoveFighterUp(fighter);
+                i--;
+                openSlotInFront = false;
             }
             else
             {
@@ -232,6 +260,20 @@ public class CombatRow : MonoBehaviour
             }
         }
         return areAllDead;
+    }
+
+    public bool AreAllCombatantsCleared()
+    {
+        bool areAllCleared = true;
+        foreach (CombatHandler combatant in _slots)
+        {
+            if (combatant != null)
+            {
+                areAllCleared = false;
+                break;
+            }
+        }
+        return areAllCleared;
     }
 
     private void OnDrawGizmosSelected()

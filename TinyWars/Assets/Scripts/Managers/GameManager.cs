@@ -13,6 +13,13 @@ public class GameManager : MonoBehaviour
     public EventDispatcher EventDispatcher;
     public CombatManager CombatManager;
 
+    [Header("PARAMETERS")]
+    [SerializeField] private float _baseActionTime = 1f;
+    public float BaseActionTime { get { return _baseActionTime; } }
+    [SerializeField] private float _actionRate = 1f;
+    public float ActionRate { get { return _actionRate; } }
+    public float ActionTime { get { return _baseActionTime / _actionRate; } }
+
     private void Awake()
     {
         if (!_instance)

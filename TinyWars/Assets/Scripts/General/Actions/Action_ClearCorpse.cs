@@ -27,12 +27,17 @@ public class Action_ClearCorpse : TWAction
         base.EnactAction();
 
         //Play corpse animation.
+        Vector3 randomDirection = (_iCombatHandler.transform.up * (Random.Range(.7f, 1f)) + (-_iCombatHandler.transform.forward * (Random.Range(.2f, 1f))));
+        randomDirection = randomDirection.normalized;
+        float forceIntensity = Random.Range(.5f, 1f) * 10f;
+        Vector3 randomTorque = new Vector3(0, 0, Random.Range(-1f, 1f) * 5f);
+        _iCombatHandler.Character.Mesh.Yeet(randomDirection * forceIntensity, randomTorque);
 
         //Clear currently occupied slot.
         int currentSlot = _iCombatHandler.CurrentRow.GetFighterSlotIndex(_iCombatHandler);
         _iCombatHandler.CurrentRow.Slots[currentSlot] = null;
 
         //TODO: Remove this later.
-        Destroy(Initiator);
+        //Destroy(Initiator);
     }
 }
