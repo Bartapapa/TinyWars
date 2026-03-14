@@ -6,6 +6,7 @@ public enum CharacterType
 {
     None,
     LittleCrow,
+    ShieldBeaver,
 }
 
 [CreateAssetMenu(menuName = "TinyWars/Character/CharacterData", fileName = "CharacterName_Data")]

@@ -148,7 +148,7 @@ public class CombatHandler : MonoBehaviour
         float damageDealt = 0;
         float oldTargetHealthValue = target.Health.Value;
 
-        target.Health.AddModifier(new StatisticModifier(_attack.Value * -1, StatisticModifierType.Flat, ModifierApplicationType.Permanent, this));
+        target.Health.AddModifier(new StatisticModifier(_attack.Value * -1, StatisticModifierType.Flat, ModifierApplicationType.Permanent, this.Character));
 
         damageDealt = oldTargetHealthValue - target.Health.Value;
 
