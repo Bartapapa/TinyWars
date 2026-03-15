@@ -19,9 +19,9 @@ public class Ability_GhostFox_SpawnGhost : TWAbility
         return newAbility;
     }
 
-    public override void OnMessage_FighterCorpseCleared(FighterContext context)
+    public override void OnMessage_FighterHealthReachedZero(FighterContext context)
     {
-        base.OnMessage_FighterCorpseCleared(context);
+        base.OnMessage_FighterHealthReachedZero(context);
 
         if (context.Fighter.gameObject != _abilityHandler.gameObject) return;
 
@@ -37,4 +37,23 @@ public class Ability_GhostFox_SpawnGhost : TWAbility
             }
         }
     }
+
+    //public override void OnMessage_FighterCorpseCleared(FighterContext context)
+    //{
+    //    base.OnMessage_FighterCorpseCleared(context);
+
+    //    if (context.Fighter.gameObject != _abilityHandler.gameObject) return;
+
+    //    foreach (TWAction action in _abilityActions)
+    //    {
+    //        if (EventDispatcher.Instance)
+    //        {
+    //            List<GameObject> target = new List<GameObject>();
+    //            target.Add(context.Fighter.gameObject);
+    //            TWAction newAction = action.GenerateAction(context.Fighter.gameObject, target);
+    //            ActionContext newContext = new ActionContext(newAction);
+    //            EventDispatcher.Instance.Message_ActionCalled(ref newContext);
+    //        }
+    //    }
+    //}
 }

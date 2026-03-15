@@ -9,6 +9,12 @@ public enum CombatState
     Dead,
 }
 
+public enum CharacterStat
+{
+    Health,
+    Attack,
+}
+
 public class CombatHandler : MonoBehaviour
 {
     public Character Character { get { return _character; } }
@@ -19,6 +25,7 @@ public class CombatHandler : MonoBehaviour
     [Header("OBJECT REFERENCES")]
     [SerializeField] private AAnimationHandler _animHandler;
     public AAnimationHandler AnimationHandler { get { return _animHandler; } }
+
 
     [Header("COMBAT DATA")]
     [SerializeField] private SOCombatData _combatData;

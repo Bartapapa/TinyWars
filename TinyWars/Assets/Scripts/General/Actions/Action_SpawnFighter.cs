@@ -34,7 +34,10 @@ public class Action_SpawnFighter : TWAction
 
         List<CombatHandler> target = new List<CombatHandler>();
         CombatRow allyRow = _iCombatHandler.CurrentRow;
+        int backmostOpenSlot = allyRow.GetBackmostOpenSlot();
+        Debug.Log(backmostOpenSlot);
+        if (backmostOpenSlot < 0) return;
 
-        allyRow.SpawnFighter(_fighterToSpawn, allyRow.Slots.Length - 1);
+        allyRow.SpawnFighter(_fighterToSpawn, backmostOpenSlot);
     }
 }

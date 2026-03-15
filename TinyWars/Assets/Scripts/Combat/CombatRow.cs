@@ -119,6 +119,39 @@ public class CombatRow : MonoBehaviour
         return currentFighters;
     }
 
+    public int GetFrontmostOpenSlot()
+    {
+        int openSlot = -1;
+        for (int i = 0; i < _slots.Length; i++)
+        {
+            if (_slots == null)
+            {
+                openSlot = i;
+                break;
+            }
+        }
+
+        return openSlot;
+    }
+
+    public int GetBackmostOpenSlot()
+    {
+        int openSlot = -1;
+        for (int i = _slots.Length -1; i >= 0; i--)
+        {
+            if (_slots[i] == null)
+            {
+                openSlot = i;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return openSlot;
+    }
+
     public void PlaceFighterAtSlot(CombatHandler fighter, int i)
     {
         if (i >= _slots.Length || i < 0) return;
@@ -253,7 +286,7 @@ public class CombatRow : MonoBehaviour
         {
             CombatHandler newFighter = InitializeFighter(originalFighter, atSlot);
             newFighter.AnimationHandler.PlayAnimationWithBlend("Spawn");
-            MoveFighterUp(newFighter);
+            //MoveFighterUp(newFighter);
             if (EventDispatcher.Instance)
             {
                 MoveContext newContext = new MoveContext(newFighter, this, atSlot);

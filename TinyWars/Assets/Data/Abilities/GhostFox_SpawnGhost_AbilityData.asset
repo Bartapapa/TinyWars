@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: GhostFox_SpawnGhost_AbilityData
   m_EditorClassIdentifier: 
   _internalName: ghostFox_spawnGhost
-  _listenedMessages: 07000000
+  _listenedMessages: 02000000
   _abilityActions:
   - {fileID: 11400000, guid: 1d8e87f75e7abfc49a258bf33ba7032d, type: 2}
