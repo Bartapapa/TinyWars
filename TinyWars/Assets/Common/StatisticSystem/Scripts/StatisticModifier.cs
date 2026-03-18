@@ -61,10 +61,12 @@ public class StatisticModifier
     public StatisticModifier(float value, StatisticModifierType type, object source) : this(value, type, (int)type, ModifierApplicationType.Standard, source) { }
     public StatisticModifier(float value, object source) : this(value, StatisticModifierType.Flat, (int)StatisticModifierType.Flat, ModifierApplicationType.Standard, source) { }
 
+    public StatisticModifier(Statistic associatedStatisic, StatisticModifierType type, ModifierApplicationType applicationType, object source) : this(0f, type, (int)type, applicationType, source, associatedStatisic) { }
+
     private void OnAssociatedStatisticValueChanged(float from, float to)
     {
         float oldValue = Value;
-        Value = AssociatedStatistic.Value;
-        AssociatedStatisticValueChanged?.Invoke(oldValue, Value);
+        Value = to;
+        AssociatedStatisticValueChanged?.Invoke(oldValue, to);
     }
 }

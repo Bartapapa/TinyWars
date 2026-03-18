@@ -42,7 +42,8 @@ public class CombatRow : MonoBehaviour
     private CombatHandler InitializeFighter(CombatHandler fighter, int slotIndex, bool enemySide)
     {
         CombatHandler newFighter = Instantiate<CombatHandler>(fighter, _rowPositions[slotIndex], Quaternion.identity, this.transform);
-        
+        //newFighter.Initialize();
+
         if (enemySide)
         {
             //newFighter.Character.Mesh.MeshPivot.localScale = new Vector3()
@@ -53,7 +54,7 @@ public class CombatRow : MonoBehaviour
         {
             newFighter.transform.localEulerAngles = Vector3.zero;
         }
-        newFighter.Initialize();
+
         newFighter.SetCurrentCombatRow(this);
         newFighter.gameObject.name = "Fighter " + slotIndex;
         _slots[slotIndex] = newFighter;

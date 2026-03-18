@@ -598,6 +598,7 @@ GameObject:
   - component: {fileID: 868273779}
   - component: {fileID: 868273778}
   - component: {fileID: 868273777}
+  - component: {fileID: 868273780}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -691,6 +692,32 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 868273775}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &868273780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 868273775}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94938d5bb673d9449a0b95a415569c07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  InitialStat: 5
+  StandardFlatAdd: 2
+  StandardPercentMultAdd: 1.2
+  StandardForce: 1
+  PermanentFlat: -3
+  TestStat:
+    InitializedBaseValue: 0
+    _name: 
+    _value: 0
+    _baseValue: 0
+    _minValue: 0
+    _maxValue: 0
+  Fighter: {fileID: 1741322158}
+  MaxHealthIncrease: 5
 --- !u!1 &1242314961
 GameObject:
   m_ObjectHideFlags: 0
@@ -801,6 +828,18 @@ Transform:
   - {fileID: 1246875907}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1741322158 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1265766557705003236, guid: 7aae498063f6f13448237e9389abd2d6,
+    type: 3}
+  m_PrefabInstance: {fileID: 2625890174772865706}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cfae416c3d25df47b24d6032d209da6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1846608440
 GameObject:
   m_ObjectHideFlags: 0
@@ -1115,7 +1154,7 @@ PrefabInstance:
     - target: {fileID: 3904158853047407848, guid: 7aae498063f6f13448237e9389abd2d6,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

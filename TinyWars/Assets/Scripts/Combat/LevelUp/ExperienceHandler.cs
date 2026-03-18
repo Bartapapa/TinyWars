@@ -41,10 +41,10 @@ public class ExperienceHandler : MonoBehaviour
             return;
         }
 
-        _currentLevel = new Statistic("CurrentLevel", atLevel, 1f);
-        _currentXP = new Statistic("CurrentXP", 0f, 0f);
-        _XPgainMultiplier = new Statistic("XPGainMultiplier", 1f, 0f);
-        _nextXPThreshold = new Statistic("NextXPThreshold", 0f, 0f);
+        _currentLevel = _statisticHandler.CreateStat("CurrentLevel", atLevel, 1f);
+        _currentXP = _statisticHandler.CreateStat("CurrentXP", 0f, 0f);
+        _XPgainMultiplier = _statisticHandler.CreateStat("XPGainMultiplier", 1f, 0f);
+        _nextXPThreshold = _statisticHandler.CreateStat("NextXPThreshold", 0f, 0f);
 
         SetNextXPThreshold(CurrentLevel);
 

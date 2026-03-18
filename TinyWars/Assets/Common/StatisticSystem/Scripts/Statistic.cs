@@ -154,12 +154,14 @@ public class Statistic
             finalValue = CalculateValueFromMods(_statisticModifiers);
         }
 
+        finalValue = (float)Math.Round(finalValue, 4);
+
         if (oldValue != finalValue)
         {
             StatisticValueChanged?.Invoke(oldValue, finalValue);
         }
 
-        return (float)Math.Round(finalValue, 4);        
+        return finalValue;        
     }
 
     private float CalculateValueFromMods(List<StatisticModifier> mods)
@@ -206,6 +208,6 @@ public class Statistic
 
     private void OnAssociatedStatisticModifierValueChanged(float from, float to)
     {
-        CalculateFinalValue();
+        _value = CalculateFinalValue();
     }
 }

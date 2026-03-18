@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class StatTests : MonoBehaviour
 {
+    [Header("STAT VERIFICATION")]
     public float InitialStat = 5f;
     public float StandardFlatAdd = 2f;
     public float StandardPercentMultAdd = 1.2f;
@@ -12,6 +13,10 @@ public class StatTests : MonoBehaviour
     public float PermanentFlat = -3f;
 
     [ReadOnlyInspector] [SerializeField] private Statistic TestStat;
+
+    [Header("ASSOCIATED STAT VERIFICATION")]
+    public CombatHandler Fighter;
+    public float MaxHealthIncrease = 2f;
 
     private void Awake()
     {
@@ -22,23 +27,24 @@ public class StatTests : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Y))
         {
-            AddStandardFlatModifier();
+            //AddStandardFlatModifier();
+            IncreaseMaxHealthValue();
         }
         if (Input.GetKeyDown(KeyCode.U))
         {
-            RemoveAllStandardModifiers();
+            //RemoveAllStandardModifiers();
         }
         if (Input.GetKeyDown(KeyCode.I))
         {
-            AddStandardPercentMultModifier();
+            //AddStandardPercentMultModifier();
         }
         if (Input.GetKeyDown(KeyCode.O))
         {
-            AddStandardForceModifier();
+            //AddStandardForceModifier();
         }
         if (Input.GetKeyDown(KeyCode.P))
         {
-            AddPermanentFlatModifier();
+            //AddPermanentFlatModifier();
         }
     }
 
@@ -80,5 +86,13 @@ public class StatTests : MonoBehaviour
         float initialValue = TestStat.Value;
         TestStat.AddModifier(new StatisticModifier(StandardFlatAdd, StatisticModifierType.Flat, 100, ModifierApplicationType.Standard, this));
         Debug.Log(this.gameObject.name + " should have increased by " + StandardFlatAdd + ". Initial value was " + initialValue + ", modified value is " + TestStat.Value + ".");
+    }
+
+    private void IncreaseMaxHealthValue()
+    {
+        float initialValue = Fighter.MaxHealth.Value;
+        Fighter.MaxHealth.AddModifier(new StatisticModifier(MaxHealthIncrease, StatisticModifierType.Flat, ModifierApplicationType.Permanent, this));
+        Debug.Log(Fighter.gameObject.name + "'s MaxHealth should have increased by " + MaxHealthIncrease + ". Initial value was " + initialValue + ", modified value is " + Fighter.MaxHealth.Value + "." +
+            Fighter.gameObject.name + "'s Health maximum value should now be " + Fighter.MaxHealth.Value + ".");
     }
 }

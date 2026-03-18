@@ -39,9 +39,11 @@ public class CombatHandler : MonoBehaviour
     [Header("STATISTICS")]
     [SerializeField] private Statistic _health;
     [SerializeField] private Statistic _attack;
+    [SerializeField] private Statistic _maxHealth;
 
     public Statistic Health { get { return _health; } }
     public Statistic Attack { get { return _attack; } }
+    public Statistic MaxHealth { get { return _maxHealth; } }
 
     [Header("COMBAT")]
     [ReadOnlyInspector] [SerializeField] private CombatRow _currentRow;
@@ -70,10 +72,7 @@ public class CombatHandler : MonoBehaviour
 
     private void Awake()
     {
-        if (!_initialized)
-        {
-            Initialize();
-        }
+        Initialize();
     }
 
     public void Initialize()
@@ -108,8 +107,12 @@ public class CombatHandler : MonoBehaviour
 
         if (_combatData)
         {
-            _health = new Statistic("Health", _combatData.BaseHealth, 0f);
-            _attack = new Statistic("Attack", _combatData.BaseAttack, 0f);
+            _health = _statisticHandler.CreateStat("Health", _combatData.BaseHealth, 0f);
+            _attack = _statisticHandler.CreateStat("Attack", _combatData.BaseAttack, 0f);
+            _maxHealth = _statisticHandler.CreateStat("MaxHealth", _combatData.BaseHealth, 0f);
+
+            //Associate MaxValue of health to _maxHealth's value.
+            _health.AddModifier(new StatisticModifier(_maxHealth, StatisticModifierType.MaxValue, ModifierApplicationType.Standard, _character));
         }
         else
         {
@@ -183,7 +186,7 @@ public class CombatHandler : MonoBehaviour
             EventDispatcher.Instance.Message_FighterDamagedDefender(ref context);
         }
 
-        Debug.Log(this.gameObject + " attacked " + target.gameObject + " for " + damageDealt + " damage!");
+        Debug.Log(this.gameObject.name + " attacked " + target.gameObject.name + " for " + damageDealt + " damage!");
 
         return damageDealt;
     }

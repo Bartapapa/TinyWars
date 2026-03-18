@@ -445,6 +445,13 @@ MonoBehaviour:
     _baseValue: 0
     _minValue: 0
     _maxValue: 0
+  _maxHealth:
+    InitializedBaseValue: 0
+    _name: 
+    _value: 0
+    _baseValue: 0
+    _minValue: 0
+    _maxValue: 0
   _currentRow: {fileID: 0}
   _projectile: {fileID: 642976124884783857, guid: 4c970b5b91ae0954ebe28766e272bb7f,
     type: 3}
