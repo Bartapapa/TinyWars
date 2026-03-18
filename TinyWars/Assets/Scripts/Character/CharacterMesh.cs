@@ -10,11 +10,55 @@ public class CharacterMesh : MonoBehaviour
     [SerializeField] private Rigidbody _rb;
     public Rigidbody Rigidbody { get { return _rb; } }
 
+    [Header("CORPSE BEHAVIOR")]
+    [SerializeField] private float _yeetForce = 1f;
+    [SerializeField] private float _gravityForce = 50f;
+    public float GravityForce { get { return _gravityForce; } }
+
+    private bool _facingRight = true;
+    public bool FacingRight { get { return _facingRight; } }
+
+    private bool _useGravity = false;
+
+    private void FixedUpdate()
+    {
+        if (_useGravity)
+        {
+            _rb.velocity += Vector3.down * _gravityForce * Time.fixedDeltaTime;
+        }
+    }
+
     public void Yeet(Vector3 force, Vector3 torque)
     {
-        _rb.useGravity = true;
+        _useGravity = true;
 
-        _rb.AddForce(force, ForceMode.VelocityChange);
+        _rb.AddForce(force * _yeetForce, ForceMode.VelocityChange);
         _rb.AddTorque(torque, ForceMode.VelocityChange);
+    }
+
+    public bool FlipFacing(bool force = false, bool forceRight = true)
+    {
+        bool facingRight = false;
+
+        if (force)
+        {
+            if (forceRight)
+            {
+                MeshPivot.localRotation = Quaternion.Euler(0, 0, 0);
+                _facingRight = true;
+            }
+            else
+            {
+                MeshPivot.localRotation = Quaternion.Euler(0, 180, 0);
+                _facingRight = false;
+            }
+        }
+        else
+        {
+            MeshPivot.localRotation = MeshPivot.localRotation * Quaternion.Euler(0, 180, 0);
+            _facingRight = !_facingRight;
+        }
+        
+        return facingRight;
     }
 }

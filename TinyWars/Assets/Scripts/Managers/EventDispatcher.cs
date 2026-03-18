@@ -13,6 +13,7 @@ public enum EventMessageType
     FighterMoved,
     FighterSpawned,
     FighterCorpseCleared,
+    FighterLevelUp,
 }
 
 public struct ActionContext
@@ -85,6 +86,7 @@ public class EventDispatcher : MonoBehaviour
     public delegate void FighterEvent(FighterContext context);
     public event FighterEvent FighterHealthReachedZero;
     public event FighterEvent FighterCorpseCleared;
+    public event FighterEvent FighterLevelUp;
     public delegate void AttackEvent(AttackContext context);
     public event AttackEvent FighterAttacked;
     public event AttackEvent FighterDamagedDefender;
@@ -144,5 +146,10 @@ public class EventDispatcher : MonoBehaviour
     public void Message_FighterCorpseCleared(ref FighterContext context)
     {
         FighterCorpseCleared?.Invoke(context);
+    }
+
+    public void Message_FighterLevelUp(ref FighterContext context)
+    {
+        FighterLevelUp?.Invoke(context);
     }
 }

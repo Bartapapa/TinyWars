@@ -61,7 +61,7 @@ PrefabInstance:
     - target: {fileID: 3904158853047407848, guid: 7aae498063f6f13448237e9389abd2d6,
         type: 3}
       propertyPath: m_Name
-      value: LittleCrow 1
+      value: LittleCrow
       objectReference: {fileID: 0}
     - target: {fileID: 9029059021316249261, guid: 7aae498063f6f13448237e9389abd2d6,
         type: 3}
@@ -71,6 +71,18 @@ PrefabInstance:
     - target: {fileID: 9029059021316249261, guid: 7aae498063f6f13448237e9389abd2d6,
         type: 3}
       propertyPath: _startingAbilities.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: a779e5dde32b8574baf81a837c2344a8,
+        type: 2}
+    - target: {fileID: 9029059021316249261, guid: 7aae498063f6f13448237e9389abd2d6,
+        type: 3}
+      propertyPath: _startingAbilities.Array.data[1]
+      value: 
+      objectReference: {fileID: 11400000, guid: a779e5dde32b8574baf81a837c2344a8,
+        type: 2}
+    - target: {fileID: 9029059021316249261, guid: 7aae498063f6f13448237e9389abd2d6,
+        type: 3}
+      propertyPath: _startingAbilities.Array.data[2]
       value: 
       objectReference: {fileID: 11400000, guid: a779e5dde32b8574baf81a837c2344a8,
         type: 2}

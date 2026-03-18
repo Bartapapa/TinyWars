@@ -168,7 +168,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _rowPositions: []
-  _positionSeparation: 1.2
+  _positionSeparation: 1.35
   _slots: []
 --- !u!1 &330585543
 GameObject:
@@ -515,8 +515,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74c4ef291c71f4745ae5ff90e2c3de2b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EventDispatcher: {fileID: 1242314962}
-  CombatManager: {fileID: 518972625}
+  _eventDispatcher: {fileID: 1242314962}
+  _combatManager: {fileID: 518972625}
+  _universalData: {fileID: 11400000, guid: 7dc603bca138302489adcc42362284ed, type: 2}
   _baseActionTime: 1
   _actionRate: 1
 --- !u!4 &538277792
@@ -810,7 +811,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1846608441}
   - component: {fileID: 1846608444}
-  - component: {fileID: 1846608443}
   - component: {fileID: 1846608442}
   m_Layer: 0
   m_Name: UICam
@@ -878,14 +878,6 @@ MonoBehaviour:
     mipBias: 0
     varianceClampScale: 0.9
     contrastAdaptiveSharpening: 0
---- !u!81 &1846608443
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1846608440}
-  m_Enabled: 1
 --- !u!20 &1846608444
 Camera:
   m_ObjectHideFlags: 0
@@ -967,7 +959,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _rowPositions: []
-  _positionSeparation: 1.2
+  _positionSeparation: 1.35
   _slots: []
 --- !u!4 &2001641281
 Transform:
@@ -1119,6 +1111,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Character_Base
+      objectReference: {fileID: 0}
+    - target: {fileID: 3904158853047407848, guid: 7aae498063f6f13448237e9389abd2d6,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

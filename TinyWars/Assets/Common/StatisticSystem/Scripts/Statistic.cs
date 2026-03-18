@@ -6,6 +6,7 @@ using UnityEngine;
 [System.Serializable]
 public class Statistic
 {
+    public string Name { get { return _name; } }
     public float InitializedBaseValue;
     public float BaseValue { get { return _baseValue; } }
     public float Value
@@ -15,21 +16,34 @@ public class Statistic
             return _value;
         }
     }
+    public int IntValue
+    {
+        get
+        {
+            return (int)Math.Round(Value, 0);
+        }
+    }
     public List<StatisticModifier> StandardModifiers { get { return _statisticModifiers; } }
 
+    [ReadOnlyInspector][SerializeField] private string _name = "";
     [ReadOnlyInspector] [SerializeField] private float _value;
     [ReadOnlyInspector] [SerializeField] private float _baseValue = float.MinValue;
+    [ReadOnlyInspector] [SerializeField] private float _minValue = float.MinValue;
+    [ReadOnlyInspector] [SerializeField] private float _maxValue = float.MaxValue;
     [ReadOnlyInspector] [SerializeField] private readonly List<StatisticModifier> _statisticModifiers;
     private readonly List<StatisticModifier> _permanentStatisticModifiersToApply;
 
     public delegate void StatisticValueChangeEvent(float from, float to);
     public event StatisticValueChangeEvent StatisticValueChanged;
 
-    public Statistic(float baseValue)
+    public Statistic(string name, float baseValue, float minValue = float.MinValue, float maxValue = float.MaxValue)
     {
+        _name = name;
         InitializedBaseValue = baseValue;
         _baseValue = InitializedBaseValue;
         _value = BaseValue;
+        _minValue = minValue;
+        _maxValue = maxValue;
 
         _statisticModifiers = new List<StatisticModifier>();
         _permanentStatisticModifiersToApply = new List<StatisticModifier>();
@@ -55,6 +69,12 @@ public class Statistic
                     break;
                 default:
                     break;
+            }
+
+            if(mod.AssociatedStatistic != null)
+            {
+                mod.AssociatedStatisticValueChanged -= OnAssociatedStatisticModifierValueChanged;
+                mod.AssociatedStatisticValueChanged += OnAssociatedStatisticModifierValueChanged;
             }
         }
 
@@ -83,6 +103,12 @@ public class Statistic
         if (_statisticModifiers.Remove(mod))
         {
             _value = CalculateFinalValue(); //only recalculate if mod was removed
+
+            if (mod.AssociatedStatistic != null)
+            {
+                mod.AssociatedStatisticValueChanged -= OnAssociatedStatisticModifierValueChanged;
+            }
+
             return true;
         }
         return false;
@@ -98,6 +124,11 @@ public class Statistic
             {
                 removed = true;
                 _statisticModifiers.RemoveAt(i);
+
+                if (_statisticModifiers[i].AssociatedStatistic != null)
+                {
+                    _statisticModifiers[i].AssociatedStatisticValueChanged -= OnAssociatedStatisticModifierValueChanged;
+                }
             }
         }
 
@@ -159,11 +190,22 @@ public class Statistic
                 case StatisticModifierType.Force:
                     modifiedValue = mod.Value;
                     break;
+                case StatisticModifierType.MinValue:
+                    _minValue = mod.Value;
+                    break;
+                case StatisticModifierType.MaxValue:
+                    _maxValue = mod.Value;
+                    break;
                 default:
                     break;
             }
         }
 
-        return (float)Math.Round(modifiedValue, 4);
+        return (float)Math.Clamp(Math.Round(modifiedValue, 4), _minValue, _maxValue);
+    }
+
+    private void OnAssociatedStatisticModifierValueChanged(float from, float to)
+    {
+        CalculateFinalValue();
     }
 }

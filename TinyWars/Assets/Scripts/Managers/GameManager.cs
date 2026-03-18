@@ -10,8 +10,14 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get { return _instance; } }
 
     [Header("MANAGERS")]
-    public EventDispatcher EventDispatcher;
-    public CombatManager CombatManager;
+    [SerializeField] private EventDispatcher _eventDispatcher;
+    public EventDispatcher EventDispatcher { get { return _eventDispatcher; } }
+    [SerializeField] private CombatManager _combatManager;
+    public CombatManager CombatManager { get { return _combatManager; } }
+
+    [Header("DATA")]
+    [SerializeField] private SOUniversalData _universalData;
+    public SOUniversalData UniversalData { get { return _universalData; } }
 
     [Header("PARAMETERS")]
     [SerializeField] private float _baseActionTime = 1f;
@@ -39,20 +45,19 @@ public class GameManager : MonoBehaviour
 
         InitializeAllManagers();
     }
-
-    private void Start()
-    {
-        CombatManager.StartCombat();
-    }
-
     private void InitializeAllManagers()
     {
         //Be careful of the order of these. Some need to be initialized before others.
 
         //High priority.
-        EventDispatcher.Initialize();
+        _eventDispatcher.Initialize();
 
         //Low priority.
-        CombatManager.Initialize();
+        _combatManager.Initialize();
+    }
+
+    private void Start()
+    {
+        _combatManager.StartCombat();
     }
 }

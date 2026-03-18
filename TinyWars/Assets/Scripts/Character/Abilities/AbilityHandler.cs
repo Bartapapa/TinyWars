@@ -93,6 +93,8 @@ public class AbilityHandler : MonoBehaviour
                 EventDispatcher.Instance.FighterAttacked -= ability.OnMessage_FighterAttacked;
                 EventDispatcher.Instance.FighterDamagedDefender -= ability.OnMessage_FighterDamagedDefender;
                 EventDispatcher.Instance.FighterMoved -= ability.OnMessage_FighterMoved;
+                EventDispatcher.Instance.FighterSpawned -= ability.OnMessage_FighterSpawned;
+                EventDispatcher.Instance.FighterCorpseCleared -= ability.OnMessage_FighterCorpseCleared;
 
                 break;
             }

@@ -18,31 +18,41 @@ public class CombatRow : MonoBehaviour
     [ReadOnlyInspector][SerializeField] private CombatHandler[] _slots;
     public CombatHandler[] Slots { get { return _slots; } }
 
-    public void Initialize(int maxSlots, List<CombatHandler> team)
+    private bool _enemySide = false;
+    public bool EnemySide { get { return _enemySide; } }
+
+    public void Initialize(int maxSlots, List<CombatHandler> team, bool enemySide)
     {
         if (maxSlots <= 0) return;
 
         _slots = new CombatHandler[maxSlots];
         _rowPositions = CreateRowPositions(maxSlots);
+        _enemySide = enemySide;
 
         for (int i = 0; i < team.Count; i++)
         {
             if (i >= maxSlots) break;
             else
             {
-                InitializeFighter(team[i], i);
-                //CombatHandler newFighter = Instantiate<CombatHandler>(team[i], _rowPositions[i], transform.rotation, this.transform);
-                //newFighter.Initialize();
-                //newFighter.SetCurrentCombatRow(this);
-                //newFighter.gameObject.name = "Fighter " + i;
-                //_slots[i] = newFighter;
+                InitializeFighter(team[i], i, enemySide);
             }
         }
     }
 
-    private CombatHandler InitializeFighter(CombatHandler fighter, int slotIndex)
+    private CombatHandler InitializeFighter(CombatHandler fighter, int slotIndex, bool enemySide)
     {
-        CombatHandler newFighter = Instantiate<CombatHandler>(fighter, _rowPositions[slotIndex], transform.rotation, this.transform);
+        CombatHandler newFighter = Instantiate<CombatHandler>(fighter, _rowPositions[slotIndex], Quaternion.identity, this.transform);
+        
+        if (enemySide)
+        {
+            //newFighter.Character.Mesh.MeshPivot.localScale = new Vector3()
+            newFighter.transform.localEulerAngles = new Vector3(0, 180, 0);
+            newFighter.Character.Mesh.FlipFacing();
+        }
+        else
+        {
+            newFighter.transform.localEulerAngles = Vector3.zero;
+        }
         newFighter.Initialize();
         newFighter.SetCurrentCombatRow(this);
         newFighter.gameObject.name = "Fighter " + slotIndex;
@@ -284,7 +294,7 @@ public class CombatRow : MonoBehaviour
         if (_slots[atSlot] != null) return false;
         else
         {
-            CombatHandler newFighter = InitializeFighter(originalFighter, atSlot);
+            CombatHandler newFighter = InitializeFighter(originalFighter, atSlot, _enemySide);
             newFighter.AnimationHandler.PlayAnimationWithBlend("Spawn");
             //MoveFighterUp(newFighter);
             if (EventDispatcher.Instance)

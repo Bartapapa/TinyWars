@@ -30,8 +30,20 @@ public class CombatManager : MonoBehaviour
 
     public void Initialize()
     {
-        GameManager.Instance.CombatManager = this;
-        _instance = this;
+        if (!_instance)
+        {
+            lock (_lockingObject)
+            {
+                if (!_instance)
+                {
+                    _instance = this;
+                }
+            }
+        }
+        else
+        {
+            Destroy(this.gameObject);
+        }
     }
 
     public void StartCombat()
@@ -44,8 +56,8 @@ public class CombatManager : MonoBehaviour
         }
 
         //Place participants into corresponding rows.
-        PlayerCombatRow.Initialize(MaxSlots, PlayerTeam);
-        EnemyCombatRow.Initialize(MaxSlots, EnemyTeam);
+        PlayerCombatRow.Initialize(MaxSlots, PlayerTeam, false);
+        EnemyCombatRow.Initialize(MaxSlots, EnemyTeam, true);
 
         StartCombatSequence();
 

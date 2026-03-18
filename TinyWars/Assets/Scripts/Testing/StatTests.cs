@@ -15,7 +15,7 @@ public class StatTests : MonoBehaviour
 
     private void Awake()
     {
-        TestStat = new Statistic(InitialStat);
+        TestStat = new Statistic("TestStat", InitialStat);
     }
 
     private void Update()

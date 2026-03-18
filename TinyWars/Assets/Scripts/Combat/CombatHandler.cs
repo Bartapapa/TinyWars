@@ -21,6 +21,11 @@ public class CombatHandler : MonoBehaviour
     private Character _character;
     public TagHandler TagHandler { get { return _tagHandler; } }
     private TagHandler _tagHandler;
+    public DeathBehavior DeathBehavior { get { return _deathBehavior; } }
+    private DeathBehavior _deathBehavior;
+
+    public StatisticHandler StatisticHandler { get { return _statisticHandler; } }
+    private StatisticHandler _statisticHandler;
 
     [Header("OBJECT REFERENCES")]
     [SerializeField] private AAnimationHandler _animHandler;
@@ -62,7 +67,6 @@ public class CombatHandler : MonoBehaviour
     private bool _initialized = false;
     private Coroutine _moveCo = null;
     private Coroutine _shakeCo = null;
-    private Coroutine _attackCo = null;
 
     private void Awake()
     {
@@ -88,10 +92,24 @@ public class CombatHandler : MonoBehaviour
             return;
         }
 
+        _deathBehavior = GetComponent<DeathBehavior>();
+        if (!_deathBehavior)
+        {
+            Debug.LogWarning("Warning! " + this.gameObject.name + " has no associated death behavior. Returning.");
+            return;
+        }
+
+        _statisticHandler = GetComponent<StatisticHandler>();
+        if (!_statisticHandler)
+        {
+            Debug.LogWarning("Warning! " + this.gameObject.name + " has no associated statistic handler. Returning.");
+            return;
+        }
+
         if (_combatData)
         {
-            _health = new Statistic(_combatData.BaseHealth);
-            _attack = new Statistic(_combatData.BaseAttack);
+            _health = new Statistic("Health", _combatData.BaseHealth, 0f);
+            _attack = new Statistic("Attack", _combatData.BaseAttack, 0f);
         }
         else
         {
@@ -125,19 +143,19 @@ public class CombatHandler : MonoBehaviour
     {
         if (delay >= 0f)
         {
-            if (_attackCo != null)
-            {
-                StopCoroutine(_attackCo);
-                _attackCo = null;
-            }
+            //if (_attackCo != null)
+            //{
+            //    StopCoroutine(_attackCo);
+            //    _attackCo = null;
+            //}
 
             if (useProjectile)
             {
-                _attackCo = StartCoroutine(ProjectileCo(targets, delay * GameManager.Instance.ActionTime));
+                /*_attackCo = */StartCoroutine(ProjectileCo(targets, delay * GameManager.Instance.ActionTime));
             }
             else
             {
-                _attackCo = StartCoroutine(AttackCo(targets, delay * GameManager.Instance.ActionTime));
+                /*_attackCo = */StartCoroutine(AttackCo(targets, delay * GameManager.Instance.ActionTime));
             }
             
         }
@@ -155,7 +173,7 @@ public class CombatHandler : MonoBehaviour
         float damageDealt = 0;
         float oldTargetHealthValue = target.Health.Value;
 
-        target.Health.AddModifier(new StatisticModifier(_attack.Value * -1, StatisticModifierType.Flat, ModifierApplicationType.Permanent, this.Character));
+        target.SufferDamage(Attack.Value, this.Character);
 
         damageDealt = oldTargetHealthValue - target.Health.Value;
 
@@ -170,25 +188,19 @@ public class CombatHandler : MonoBehaviour
         return damageDealt;
     }
 
+    public void SufferDamage(float damageValue, object source)
+    {
+        Health.AddModifier(new StatisticModifier(damageValue * -1, StatisticModifierType.Flat, ModifierApplicationType.Permanent, source));
+
+        if (Health.Value > 0)
+        {
+            _animHandler.PlayAdditiveAnimation("Hurt", 1);
+            DamageShake(.2f, _damageShakeIntensityCurve);
+        }
+    }
+
     private void OnHealthValueChanged (float from, float to)
     {
-        float valueDiff = from - to;
-        bool damaged = valueDiff >= 0 ? true : false;
-
-        if (damaged)
-        {
-            if (to <= 0)
-            {
-                _animHandler.PlayAnimation("Die");
-                DamageShake(.6f, _deathShakeIntensityCurve);
-            }
-            else
-            {
-                _animHandler.PlayAdditiveAnimation("Hurt", 1);
-                DamageShake(.2f, _damageShakeIntensityCurve);
-            }
-        }
-
         if (to <= 0 && !_tagHandler.HasTag(CombatState.Dead))
         {
             if (EventDispatcher.Instance)
@@ -196,9 +208,18 @@ public class CombatHandler : MonoBehaviour
                 FighterContext context = new FighterContext(this);
                 EventDispatcher.Instance.Message_FighterHealthReachedZero(ref context);
             }
-            Debug.Log(this.gameObject + " died!");
-            _tagHandler.AddTag(CombatState.Dead, this);
+
+            FighterDie();
         }
+    }
+
+    private void FighterDie()
+    {
+        _animHandler.PlayAnimation("Die");
+        DamageShake(.6f, _deathShakeIntensityCurve);
+
+        Debug.Log(this.gameObject + " died!");
+        _tagHandler.AddTag(CombatState.Dead, this);
     }
 
     public void DamageShake(float actionTimeMultiplier, AnimationCurve curve)
@@ -280,7 +301,7 @@ public class CombatHandler : MonoBehaviour
             yield return null;
         }
         
-        _attackCo = null;
+        //_attackCo = null;
 
         foreach(CombatHandler target in targets)
         {
