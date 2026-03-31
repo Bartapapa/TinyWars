@@ -13,3 +13,5 @@ MonoBehaviour:
   m_Name: LittleCrow_CharacterData
   m_EditorClassIdentifier: 
   Character: 1
+  CharacterPrefab: {fileID: 4774601810821520205, guid: ab458c2ba91baae4e9f18691dc26d97b,
+    type: 3}

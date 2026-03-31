@@ -10,7 +10,7 @@ public abstract class AAnimationHandler : MonoBehaviour
 
     public void PlayAnimation(string stateName, int layer = -1)
     {
-        _anim.Play(stateName, layer);
+        _anim.Play(stateName, 0);
     }
     public void PlayAnimationWithBlend(string stateName, float transitionDuration = .1f)
     {

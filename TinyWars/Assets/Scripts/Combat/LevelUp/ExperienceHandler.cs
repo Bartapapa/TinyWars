@@ -56,6 +56,8 @@ public class ExperienceHandler : MonoBehaviour
 
     private void OnCurrentXPChangedValue(float from, float to)
     {
+        if (!_initialized) return;
+
         if (to > from)
         {
             //Increased XP, such as after combat.
@@ -79,6 +81,12 @@ public class ExperienceHandler : MonoBehaviour
         _currentXP.AddModifier(new StatisticModifier(0f, StatisticModifierType.Force, ModifierApplicationType.Permanent));
 
         SetNextXPThreshold(CurrentLevel);
+
+        //Apply health and damage bonuses appropriate to character combat data.
+        float healthIncrease = _combatHandler.CombatData.HealthIncrease;
+        float attackIncrease = _combatHandler.CombatData.AttackIncrease;
+        _combatHandler.Health.AddModifier(new StatisticModifier(healthIncrease, StatisticModifierType.Flat, ModifierApplicationType.Permanent));
+        _combatHandler.Attack.AddModifier(new StatisticModifier(attackIncrease, StatisticModifierType.Flat, ModifierApplicationType.Permanent));
 
         if (EventDispatcher.Instance)
         {

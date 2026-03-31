@@ -8,6 +8,8 @@ public class Action_ClearCorpse : TWAction
     public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets)
     {
         Action_ClearCorpse newAction = CreateInstance<Action_ClearCorpse>();
+        newAction._actionType = _actionType;
+        newAction._simultaneousAction = _simultaneousAction;
         newAction._initiator = initiator;
         newAction._targets = targets;
 
@@ -27,16 +29,6 @@ public class Action_ClearCorpse : TWAction
         base.EnactAction();
 
         //Clear currently occupied slot.
-        int currentSlot = _iCombatHandler.CurrentRow.GetFighterSlotIndex(_iCombatHandler);
-        _iCombatHandler.CurrentRow.Slots[currentSlot] = null;
-
-        if (EventDispatcher.Instance)
-        {
-            FighterContext context = new FighterContext(_iCombatHandler);
-            EventDispatcher.Instance.Message_FighterCorpseCleared(ref context);
-        }
-
-        //TODO: Remove this later.
-        //Destroy(Initiator);
+        _iCombatHandler.CurrentRow.ClearFighterCorpse(_iCombatHandler);
     }
 }

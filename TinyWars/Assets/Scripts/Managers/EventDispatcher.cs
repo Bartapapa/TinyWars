@@ -69,6 +69,18 @@ public struct MoveContext
     public MoveContext(CombatHandler mover, int toSlotIndex) : this(mover, null, toSlotIndex) { }
 }
 
+public struct AbilityContext
+{
+    public Character Character;
+    public TWAbility Ability;
+
+    public AbilityContext(Character character, TWAbility ability)
+    {
+        Character = character;
+        Ability = ability;
+    }
+}
+
 public class EventDispatcher : MonoBehaviour
 {
     private static object _lockingObject = new object();
@@ -93,6 +105,8 @@ public class EventDispatcher : MonoBehaviour
     public delegate void MoveEvent(MoveContext context);
     public event MoveEvent FighterMoved;
     public event MoveEvent FighterSpawned;
+    public delegate void AbilityEvent(AbilityContext context);
+    public event AbilityEvent CharacterUsedAbility;
     #endregion
 
     public void Initialize()
@@ -151,5 +165,10 @@ public class EventDispatcher : MonoBehaviour
     public void Message_FighterLevelUp(ref FighterContext context)
     {
         FighterLevelUp?.Invoke(context);
+    }
+
+    public void Message_OnCharacterUsedAbility(ref AbilityContext context)
+    {
+        CharacterUsedAbility?.Invoke(context);
     }
 }

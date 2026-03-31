@@ -12,3 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07645349d37dfa54a997c4a63bfe6bdf, type: 3}
   m_Name: ClearCorpse_ActionData
   m_EditorClassIdentifier: 
+  _actionType: 0
+  _simultaneousAction: 1

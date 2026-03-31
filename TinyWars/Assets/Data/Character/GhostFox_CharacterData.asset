@@ -13,3 +13,5 @@ MonoBehaviour:
   m_Name: GhostFox_CharacterData
   m_EditorClassIdentifier: 
   Character: 3
+  CharacterPrefab: {fileID: 3798895453731345518, guid: 0a563dc1b21ba1841bfea12e7e6aeaef,
+    type: 3}

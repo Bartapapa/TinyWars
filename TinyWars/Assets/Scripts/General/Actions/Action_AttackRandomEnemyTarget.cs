@@ -10,6 +10,8 @@ public class Action_AttackRandomEnemyTarget : TWAction
     public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets)
     {
         Action_AttackRandomEnemyTarget newAction = CreateInstance<Action_AttackRandomEnemyTarget>();
+        newAction._actionType = _actionType;
+        newAction._simultaneousAction = _simultaneousAction;
         newAction._initiator = initiator;
         newAction._targets = targets;
 
@@ -37,7 +39,7 @@ public class Action_AttackRandomEnemyTarget : TWAction
         CombatHandler randomTarget = aliveTargets[randomInt];
         target.Add(randomTarget);
 
-        _iCombatHandler.AttackTargets(target, .66f, true);
+        _iCombatHandler.AttackTargets(target, _iCombatHandler.Attack.Value, .66f, true);
 
         if (EventDispatcher.Instance)
         {

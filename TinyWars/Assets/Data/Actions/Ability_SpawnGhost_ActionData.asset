@@ -12,5 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba73cff13c1bc7e40a960e421e913187, type: 3}
   m_Name: Ability_SpawnGhost_ActionData
   m_EditorClassIdentifier: 
+  _actionType: 300
   _fighterToSpawn: {fileID: 8949689578039213481, guid: a0f2c02da47cdf242ac4e15034090869,
     type: 3}
+  _numberToSpawn: 1
+  _spawnPosition: 2

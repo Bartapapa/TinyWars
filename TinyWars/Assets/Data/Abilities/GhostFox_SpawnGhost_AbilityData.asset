@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: GhostFox_SpawnGhost_AbilityData
   m_EditorClassIdentifier: 
   _internalName: ghostFox_spawnGhost
+  _abilityName: Angry spirit
+  _abilityIcon: {fileID: 21300000, guid: 711dcb29f42d0f04b969bd7f4c15cbb2, type: 3}
   _listenedMessages: 02000000
-  _abilityActions:
+  _lvl1_abilityActions:
   - {fileID: 11400000, guid: 1d8e87f75e7abfc49a258bf33ba7032d, type: 2}
+  _canLevelUp: 1

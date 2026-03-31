@@ -10,6 +10,8 @@ public class Action_Attack : TWAction
     public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets)
     {
         Action_Attack newAction = CreateInstance<Action_Attack>();
+        newAction._actionType = _actionType;
+        newAction._simultaneousAction = _simultaneousAction;
         newAction._initiator = initiator;
         newAction._targets = targets;
 
@@ -30,7 +32,7 @@ public class Action_Attack : TWAction
 
         _iCombatHandler.AnimationHandler.PlayAnimationWithBlend("Attack");
 
-        _iCombatHandler.AttackTargets(_tCombatHandlers.Values.ToList<CombatHandler>(), .66f);
+        _iCombatHandler.AttackTargets(_tCombatHandlers.Values.ToList<CombatHandler>(), _iCombatHandler.Attack.Value, .66f);
 
         if (EventDispatcher.Instance)
         {

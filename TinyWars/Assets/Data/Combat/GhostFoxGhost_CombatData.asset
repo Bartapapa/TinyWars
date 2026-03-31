@@ -14,3 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   BaseHealth: 1
   BaseAttack: 3
+  HealthIncrease: 0
+  AttackIncrease: 0

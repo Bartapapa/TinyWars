@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,16 +10,15 @@ public class CombatManager : MonoBehaviour
 
     public static CombatManager Instance { get { return _instance; } }
 
-    [Header("COMBAT ROWS")]
-    public CombatRow PlayerCombatRow;
-    public CombatRow EnemyCombatRow;
+    [Header("BATTLEFIELD")]
+    [SerializeField] private BattleField _battleField;
+    public BattleField CurrentBattleField { get { return _battleField; } }
 
     [Header("UNIVERSAL ACTIONS")]
     public Action_Attack AttackAction;
     public Action_ClearCorpse ClearCorpseAction;
 
     [Header("TEST BATTLE")]
-    public int MaxSlots = 5;
     public List<CombatHandler> PlayerTeam = new List<CombatHandler>();
     public List<CombatHandler> EnemyTeam = new List<CombatHandler>();
 
@@ -55,12 +55,55 @@ public class CombatManager : MonoBehaviour
             EventDispatcher.Instance.ActionCalled += OnActionCalled;
         }
 
-        //Place participants into corresponding rows.
-        PlayerCombatRow.Initialize(MaxSlots, PlayerTeam, false);
-        EnemyCombatRow.Initialize(MaxSlots, EnemyTeam, true);
+        int maxTeamSlots = GameManager.Instance.UniversalData.MaxTeamSlots;
+
+        _battleField.InitializeBattlefield(maxTeamSlots, PlayerTeam, EnemyTeam);
+
+        TransitionIntoCombat();
+    }
+
+    private void TransitionIntoCombat()
+    {
+        StartCoroutine(CombatTransitionCo());
+    }
+
+    private IEnumerator CombatTransitionCo()
+    {
+        float transitionDuration = 3f * GameManager.Instance.ActionTime;
+        float transitionTimer = 0f;
+
+        for (int i = 0; i < _battleField.PlayerRow.Slots.Length; i++)
+        {
+            if (_battleField.PlayerRow.Slots[i] != null)
+            {
+                _battleField.PlayerRow.Slots[i].gameObject.transform.position = _battleField.PlayerRowInitialPos;
+                _battleField.PlayerRow.Slots[i].MoveToPosition(_battleField.PlayerRow.RowPositions[i], 3f);
+            }
+        }
+
+        for (int i = 0; i < _battleField.PlayerRow.Slots.Length; i++)
+        {
+            if (_battleField.EnemyRow.Slots[i] != null)
+            {
+                _battleField.EnemyRow.Slots[i].gameObject.transform.position = _battleField.EnemyRowInitialPos;
+                _battleField.EnemyRow.Slots[i].MoveToPosition(_battleField.EnemyRow.RowPositions[i], 3f);
+            }
+        }
+
+        while (transitionTimer < transitionDuration)
+        {
+            transitionTimer += Time.deltaTime;
+            yield return null;
+        }
+
+        _battleField.PlayerRow.MoveAllFightersUp();
+        _battleField.EnemyRow.MoveAllFightersUp();
 
         StartCombatSequence();
+    }
 
+    private void StartCombatSequence()
+    {
         //Have participants, turn by turn, attack each other simultaneously until one side has no more participants.
         //Each 'turn' of combat is deconstructed in Phases, where both Player and Enemy team actions are listed.
         //Phases are lists of actions, and Enemy and Player phase actions are done simultaneously. (All actions of a Phase take the same amount of time to 'enact')
@@ -76,10 +119,9 @@ public class CombatManager : MonoBehaviour
         //EVENTS can call phase checks. The end of a phase check is an event.
         //Clashes, a character dying, a character being hit, a character being healed - all of these can cause phase check requests.
         //If a phase check request is detected, the actions of the following phase are checked - if there are any, generate a phase for both teams.
-    }
 
-    private void StartCombatSequence()
-    {
+
+
         if (PhaseCheck())
         {
             _phaseSequenceCo = StartCoroutine(PhaseSequenceCo());
@@ -87,8 +129,8 @@ public class CombatManager : MonoBehaviour
         else
         {
             //If everyone dead is cleared, end combat.
-            bool playersCleared = PlayerCombatRow.AreAllCombatantsCleared();
-            bool enemiesCleared = EnemyCombatRow.AreAllCombatantsCleared();
+            bool playersCleared = _battleField.PlayerRow.AreAllCombatantsCleared();
+            bool enemiesCleared = _battleField.EnemyRow.AreAllCombatantsCleared();
             if (playersCleared || enemiesCleared)
             {
                 EndCombat();
@@ -108,8 +150,8 @@ public class CombatManager : MonoBehaviour
             }
 
             //If some combatants are dead, clear their corpses and move everyone alive up.
-            List<CombatHandler> deadPlayercombatants = PlayerCombatRow.GetDeadCombatants();
-            List<CombatHandler> deadEnemycombatants = EnemyCombatRow.GetDeadCombatants();
+            List<CombatHandler> deadPlayercombatants = _battleField.PlayerRow.GetDeadCombatants();
+            List<CombatHandler> deadEnemycombatants = _battleField.EnemyRow.GetDeadCombatants();
             if (deadPlayercombatants.Count > 0 || deadEnemycombatants.Count > 0)
             {
                 _currentPhase = new CombatPhase();
@@ -127,19 +169,19 @@ public class CombatManager : MonoBehaviour
 
                 _phaseSequenceCo = StartCoroutine(PhaseSequenceCo());
 
-                PlayerCombatRow.MoveAllFightersUp();
-                EnemyCombatRow.MoveAllFightersUp();
+                _battleField.PlayerRow.MoveAllFightersUp();
+                _battleField.EnemyRow.MoveAllFightersUp();
             }      
             else
             {
                 //Otherwise, attack and proceed as normal.
                 _currentPhase = new CombatPhase();
                 List<GameObject> playerTarget = new List<GameObject>();
-                playerTarget.Add(EnemyCombatRow.Slots[0].gameObject);
+                playerTarget.Add(_battleField.EnemyRow.Slots[0].gameObject);
                 List<GameObject> enemyTarget = new List<GameObject>();
-                enemyTarget.Add(PlayerCombatRow.Slots[0].gameObject);
-                TWAction playerAttackAction = AttackAction.GenerateAction(PlayerCombatRow.Slots[0].gameObject, playerTarget);
-                TWAction enemyAttackAction = AttackAction.GenerateAction(EnemyCombatRow.Slots[0].gameObject, enemyTarget);
+                enemyTarget.Add(_battleField.PlayerRow.Slots[0].gameObject);
+                TWAction playerAttackAction = AttackAction.GenerateAction(_battleField.PlayerRow.Slots[0].gameObject, playerTarget);
+                TWAction enemyAttackAction = AttackAction.GenerateAction(_battleField.EnemyRow.Slots[0].gameObject, enemyTarget);
                 _currentPhase.PhaseActions.Add(playerAttackAction);
                 _currentPhase.PhaseActions.Add(enemyAttackAction);
 
@@ -163,7 +205,10 @@ public class CombatManager : MonoBehaviour
 
     private IEnumerator PhaseSequenceCo()
     {
-        _currentPhase.EnactAllPhaseActions();
+        _currentPhase.SortPhaseActions();
+
+        _currentPhase.EnactNextPhaseAction();
+
         float currentPhaseTimer = GameManager.Instance.ActionTime;
 
         while (currentPhaseTimer > 0f)
@@ -173,7 +218,22 @@ public class CombatManager : MonoBehaviour
         }
 
         _phaseSequenceCo = null;
-        StartCombatSequence();
+        OnActionEnded();
+    }
+
+    private void OnActionEnded()
+    {
+        //Check if current phase still has actions to process.
+        if (_currentPhase.HasActionsToProcess)
+        {
+            //If yes, process next action.
+            _phaseSequenceCo = StartCoroutine(PhaseSequenceCo());
+        }
+        else
+        {
+            //If no, start new combat sequence.
+            StartCombatSequence();
+        }
     }
 
     public void EndCombat()
@@ -184,9 +244,13 @@ public class CombatManager : MonoBehaviour
             EventDispatcher.Instance.ActionCalled -= OnActionCalled;
         }
 
-        //Remove combatants from combat.
-        PlayerCombatRow.ClearRow();
-        EnemyCombatRow.ClearRow();
+        //Transition to end of combat screen / game over screen depending on fight results.
+        //Call end of combat event, allow abilities based on end of combat to apply.
+        //Initiate recruitment phase if possible.
+
+        //Remove combatants from combat. Change this, only used for debugging.
+        _battleField.PlayerRow.ClearRow();
+        _battleField.EnemyRow.ClearRow();
     }
 
     private void OnActionCalled(ActionContext context)

@@ -10,4 +10,8 @@ public class SOCombatData : ScriptableObject
 
     [Header("BASE ATTACK")]
     public float BaseAttack = 2f;
+
+    [Header("LEVEL UP")]
+    public float HealthIncrease = 3f;
+    public float AttackIncrease = 3f;
 }

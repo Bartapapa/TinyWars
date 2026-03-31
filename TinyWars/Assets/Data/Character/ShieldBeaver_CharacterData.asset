@@ -13,3 +13,5 @@ MonoBehaviour:
   m_Name: ShieldBeaver_CharacterData
   m_EditorClassIdentifier: 
   Character: 2
+  CharacterPrefab: {fileID: 215062151319335016, guid: 4bbbaa0c259490b4d813dd49a3a5d99b,
+    type: 3}

@@ -1,9 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
-[System.Serializable]
+public enum CombatRowSpawnPosition
+{
+    None,
+    FrontMost,
+    BackMost,
+    AtContextSlot,
+}
+
+public enum CombatRowType
+{
+    Player,
+    Enemy,
+}
+
 public class CombatRow : MonoBehaviour
 {
     [Header("MAXIMUM SLOTS")]
@@ -13,6 +25,7 @@ public class CombatRow : MonoBehaviour
     [Header("ROW POSITIONS")]
     [SerializeField] private Vector3[] _rowPositions;
     [SerializeField] private float _positionSeparation = 1.2f;
+    public Vector3[] RowPositions { get { return _rowPositions; } }
 
     [Header("FIGHTER SLOTS")]
     [ReadOnlyInspector][SerializeField] private CombatHandler[] _slots;
@@ -34,9 +47,21 @@ public class CombatRow : MonoBehaviour
             if (i >= maxSlots) break;
             else
             {
-                InitializeFighter(team[i], i, enemySide);
+                if (team[i] != null)
+                {
+                    InitializeFighter(team[i], i, enemySide);                   
+                }
+                else
+                {
+                    _slots[i] = null;
+                }
             }
         }
+    }
+
+    public void ResetRowPositions(int maxSlots)
+    {
+        _rowPositions = CreateRowPositions(maxSlots);
     }
 
     private CombatHandler InitializeFighter(CombatHandler fighter, int slotIndex, bool enemySide)
@@ -56,7 +81,16 @@ public class CombatRow : MonoBehaviour
         }
 
         newFighter.SetCurrentCombatRow(this);
-        newFighter.gameObject.name = "Fighter " + slotIndex;
+        string teamName = "";
+        if (_enemySide)
+        {
+            teamName = "Enemy";
+        }
+        else
+        {
+            teamName = "Player";
+        }
+        newFighter.gameObject.name = teamName + "_" + newFighter.Character.CharacterData.Character.ToString();
         _slots[slotIndex] = newFighter;
 
         return newFighter;
@@ -121,6 +155,23 @@ public class CombatRow : MonoBehaviour
                     }
                 }
                 else
+                {
+                    currentFighters.Add(_slots[i]);
+                }
+            }
+        }
+
+        return currentFighters;
+    }
+
+    public List<CombatHandler> GetCurrentDeadFighters()
+    {
+        List<CombatHandler> currentFighters = new List<CombatHandler>();
+        for (int i = 0; i < _slots.Length - 1; i++)
+        {
+            if (_slots[i] != null)
+            {
+                if (_slots[i].TagHandler.HasTag(CombatState.Dead))
                 {
                     currentFighters.Add(_slots[i]);
                 }
@@ -211,6 +262,25 @@ public class CombatRow : MonoBehaviour
         }
     }
 
+    public void ClearAllFighterCorpses()
+    {
+        foreach(CombatHandler fighter in GetCurrentDeadFighters())
+        {
+            ClearFighterCorpse(fighter);
+        }
+    }
+
+    public void ClearFighterCorpse(CombatHandler fighter)
+    {
+        RemoveFighter(fighter);
+
+        if (EventDispatcher.Instance)
+        {
+            FighterContext context = new FighterContext(fighter);
+            EventDispatcher.Instance.Message_FighterCorpseCleared(ref context);
+        }
+    }
+
     public void MoveFighterToSlotIndex(CombatHandler fighter, int toSlotIndex)
     {
         if (_slots[toSlotIndex] != null)
@@ -249,6 +319,59 @@ public class CombatRow : MonoBehaviour
         Debug.Log(fighter1.gameObject.name + " switched positions with " + fighter1.gameObject.name + "!");
     }
 
+    public bool MoveFighterDown(CombatHandler fighter)
+    {
+        int fighterIndex = GetFighterSlotIndex(fighter);
+        int emptySlotBehindIndex = -1;
+        bool enoughSpace = false;
+
+        if (fighterIndex == _slots.Length - 1) return enoughSpace;
+        int slotToCheck = fighterIndex + 1;
+
+        if (_slots[slotToCheck] != null)
+        {
+            if (_slots[slotToCheck].TagHandler.HasTag(CombatState.Dead))
+            {
+                ClearFighterCorpse(_slots[slotToCheck]);
+            }
+        }
+
+        if (_slots[slotToCheck] == null)
+        {
+            emptySlotBehindIndex = slotToCheck;
+            enoughSpace = true;
+        }
+
+        if (emptySlotBehindIndex >= 0)
+        {
+            MoveFighterToSlotIndex(fighter, emptySlotBehindIndex);
+        }
+
+        return enoughSpace;
+    }
+
+    public bool MoveAllFightersDown()
+    {
+        bool openSlotInBack = false;
+
+        if (GetCurrentFighters().Count == _slots.Length) return openSlotInBack;
+
+        for (int i = _slots.Length -1; i >= 0; i--)
+        {
+            if (_slots[i] != null && openSlotInBack)
+            {
+                CombatHandler fighter = _slots[i];
+                MoveFighterDown(fighter);
+            }
+            else
+            {
+                openSlotInBack = true;
+            }
+        }
+
+        return openSlotInBack;
+    }
+
     public void MoveFighterUp(CombatHandler fighter)
     {
         int fighterIndex = GetFighterSlotIndex(fighter);
@@ -256,6 +379,14 @@ public class CombatRow : MonoBehaviour
 
         for (int i = 0; i < fighterIndex; i++)
         {
+            if (_slots[i] != null)
+            {
+                if (_slots[i].TagHandler.HasTag(CombatState.Dead))
+                {
+                    ClearFighterCorpse(_slots[i]);
+                }
+            }
+
             if (_slots[i] == null)
             {
                 frontmostEmptySlot = i;

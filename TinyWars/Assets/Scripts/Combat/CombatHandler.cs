@@ -64,7 +64,9 @@ public class CombatHandler : MonoBehaviour
 
     [Header("DAMAGE AND DEATH")]
     [SerializeField] private AnimationCurve _damageShakeIntensityCurve = new AnimationCurve();
+    public AnimationCurve DamageShakeIntensityCurve { get { return _damageShakeIntensityCurve; } }
     [SerializeField] private AnimationCurve _deathShakeIntensityCurve = new AnimationCurve();
+    public AnimationCurve DeathShakeIntensityCurve { get { return _deathShakeIntensityCurve; } }
 
     private bool _initialized = false;
     private Coroutine _moveCo = null;
@@ -72,6 +74,7 @@ public class CombatHandler : MonoBehaviour
 
     private void Awake()
     {
+        //This should be called when combat starts.
         Initialize();
     }
 
@@ -139,26 +142,24 @@ public class CombatHandler : MonoBehaviour
 
     public void SetCurrentCombatRow(CombatRow row)
     {
+        if (!_initialized) return;
+
         _currentRow = row;
     }
 
-    public void AttackTargets(List<CombatHandler> targets, float delay = 0f, bool useProjectile = false)
+    public void AttackTargets(List<CombatHandler> targets, float damageValue, float delay = 0f, bool useProjectile = false)
     {
+        if (!_initialized) return;
+
         if (delay >= 0f)
         {
-            //if (_attackCo != null)
-            //{
-            //    StopCoroutine(_attackCo);
-            //    _attackCo = null;
-            //}
-
             if (useProjectile)
             {
-                /*_attackCo = */StartCoroutine(ProjectileCo(targets, delay * GameManager.Instance.ActionTime));
+                StartCoroutine(ProjectileCo(targets, damageValue, delay * GameManager.Instance.ActionTime));
             }
             else
             {
-                /*_attackCo = */StartCoroutine(AttackCo(targets, delay * GameManager.Instance.ActionTime));
+                StartCoroutine(AttackCo(targets, damageValue, delay * GameManager.Instance.ActionTime));
             }
             
         }
@@ -166,17 +167,17 @@ public class CombatHandler : MonoBehaviour
         {
             foreach(CombatHandler target in targets)
             {
-                DamageTarget(target);
+                DamageTarget(target, Attack.Value);
             }
         }
     }
 
-    public float DamageTarget(CombatHandler target)
+    private float DamageTarget(CombatHandler target, float damageValue)
     {
         float damageDealt = 0;
         float oldTargetHealthValue = target.Health.Value;
 
-        target.SufferDamage(Attack.Value, this.Character);
+        target.SufferDamage(damageValue, this.Character);
 
         damageDealt = oldTargetHealthValue - target.Health.Value;
 
@@ -193,6 +194,8 @@ public class CombatHandler : MonoBehaviour
 
     public void SufferDamage(float damageValue, object source)
     {
+        if (!_initialized) return;
+
         Health.AddModifier(new StatisticModifier(damageValue * -1, StatisticModifierType.Flat, ModifierApplicationType.Permanent, source));
 
         if (Health.Value > 0)
@@ -204,29 +207,33 @@ public class CombatHandler : MonoBehaviour
 
     private void OnHealthValueChanged (float from, float to)
     {
+        if (!_initialized) return;
+
         if (to <= 0 && !_tagHandler.HasTag(CombatState.Dead))
         {
+            FighterDie();
             if (EventDispatcher.Instance)
             {
                 FighterContext context = new FighterContext(this);
                 EventDispatcher.Instance.Message_FighterHealthReachedZero(ref context);
             }
-
-            FighterDie();
         }
     }
 
     private void FighterDie()
     {
+        if (!_initialized) return;
+
         _animHandler.PlayAnimation("Die");
         DamageShake(.6f, _deathShakeIntensityCurve);
 
-        Debug.Log(this.gameObject + " died!");
-        _tagHandler.AddTag(CombatState.Dead, this);
+        _deathBehavior.DeathBehaviorDie();
     }
 
     public void DamageShake(float actionTimeMultiplier, AnimationCurve curve)
     {
+        if (!_initialized) return;
+
         if (_shakeCo != null)
         {
             StopCoroutine(_shakeCo);
@@ -235,22 +242,24 @@ public class CombatHandler : MonoBehaviour
         _shakeCo = StartCoroutine(ShakeCo(actionTimeMultiplier, curve));
     }
 
-    public void MoveToPosition(Vector3 toPos)
+    public void MoveToPosition(Vector3 toPos, float overTime = 1f)
     {
+        if (!_initialized) return;
+
         if (_moveCo != null)
         {
             StopCoroutine(_moveCo);
             _moveCo = null;
         }
-        _moveCo = StartCoroutine(MoveCo(toPos));
+        _moveCo = StartCoroutine(MoveCo(toPos, overTime));
     }
 
-    private IEnumerator MoveCo(Vector3 toPos)
+    private IEnumerator MoveCo(Vector3 toPos, float overTime = 1f)
     {
         Vector3 fromPos = transform.position;
         float currentMoveTimer = 0f;
         Vector3 newPos = fromPos;
-        float actionTime = GameManager.Instance.ActionTime*.75f;
+        float actionTime = GameManager.Instance.ActionTime*.75f*overTime;
         float alpha = 0;
 
         while (currentMoveTimer <= actionTime)
@@ -294,7 +303,7 @@ public class CombatHandler : MonoBehaviour
         _shakeCo = null;
     }
 
-    private IEnumerator AttackCo(List<CombatHandler> targets, float delay)
+    private IEnumerator AttackCo(List<CombatHandler> targets, float damageValue, float delay)
     {
         float currentDelayTimer = 0f;
 
@@ -303,16 +312,14 @@ public class CombatHandler : MonoBehaviour
             currentDelayTimer += Time.deltaTime;
             yield return null;
         }
-        
-        //_attackCo = null;
 
         foreach(CombatHandler target in targets)
         {
-            DamageTarget(target);
+            DamageTarget(target, damageValue);
         }
     }
 
-    private IEnumerator ProjectileCo(List<CombatHandler> targets, float delay)
+    private IEnumerator ProjectileCo(List<CombatHandler> targets, float damageValue, float delay)
     {
         float currentDelayTimer = 0f;
 
@@ -349,7 +356,7 @@ public class CombatHandler : MonoBehaviour
 
         foreach (CombatHandler target in targets)
         {
-            DamageTarget(target);
+            DamageTarget(target, damageValue);
         }
     }
 }

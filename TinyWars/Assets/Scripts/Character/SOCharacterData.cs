@@ -9,6 +9,8 @@ public enum CharacterType
     ShieldBeaver,
     GhostFox,
     GhostFoxGhost,
+    MomBun,
+    LilBun,
 }
 
 [CreateAssetMenu(menuName = "TinyWars/Character/CharacterData", fileName = "CharacterName_Data")]
@@ -16,4 +18,7 @@ public class SOCharacterData : ScriptableObject
 {
     [Header("CHARACTER TYPE")]
     public CharacterType Character = CharacterType.None;
+
+    [Header("CHARACTER PREFAB")]
+    public Character CharacterPrefab;
 }

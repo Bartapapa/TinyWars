@@ -5,6 +5,13 @@ using UnityEngine;
 
 public class AbilityHandler : MonoBehaviour
 {
+    private Character _character;
+    public Character Character { get { return _character; } }
+
+    [Header("OBJECT REFERENCES")]
+    [SerializeField] private AbilityPopup _abilityPopup;
+    public AbilityPopup AbilityPopup { get { return _abilityPopup; } }
+
     [Header("STARTING ABILITIES")]
     [SerializeField] private List<TWAbility> _startingAbilities = new List<TWAbility>();
 
@@ -12,8 +19,22 @@ public class AbilityHandler : MonoBehaviour
     [SerializeField] [ReadOnlyInspector] private List<TWAbility> _abilities = new List<TWAbility>();
     public List<TWAbility> Abilities { get { return _abilities; } }
 
+    private void Awake()
+    {
+        _character = GetComponent<Character>();
+        if (!_character)
+        {
+            Debug.LogWarning("Warning! " + this.gameObject.name + " has no associated character. Returning.");
+            return;
+        }
+    }
+
     private void Start()
     {
+        //Initialize this with a method called, to be able to correctly ascertain the sequence of actions.
+        EventDispatcher.Instance.CharacterUsedAbility -= OnCharacterUsedAbility;
+        EventDispatcher.Instance.CharacterUsedAbility += OnCharacterUsedAbility;
+
         foreach (TWAbility ability in _startingAbilities)
         {
             AddAbility(ability);
@@ -101,5 +122,13 @@ public class AbilityHandler : MonoBehaviour
         }
 
         return abilityToRemove != null;
+    }
+
+    private void OnCharacterUsedAbility(AbilityContext context)
+    {
+        if (context.Character == _character)
+        {
+            _abilityPopup.Popup(context.Ability);
+        }
     }
 }

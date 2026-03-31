@@ -3,8 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+public enum ActionType
+{
+    ClearCorpse = 0,
+    Die = 1,
+    Damaging = 100,
+    Buff = 200,
+    Spawn = 300,
+    None = 999,
+}
+
 public class TWAction : ScriptableObject
 {
+    [Header("BASE ACTION PARAMETERS")]
+    [SerializeField] protected ActionType _actionType = ActionType.None;
+    public int ActionPriority { get { return (int)_actionType; } }
+    [SerializeField] protected bool _simultaneousAction = false;
+    public bool SimultaneousAction { get { return _simultaneousAction; } }
+
     protected GameObject _initiator;
     protected List<GameObject> _targets;
 
@@ -21,6 +37,8 @@ public class TWAction : ScriptableObject
     public virtual TWAction GenerateAction (GameObject initiator, List<GameObject> targets)
     {
         TWAction newAction = CreateInstance<TWAction>();
+        newAction._actionType = _actionType;
+        newAction._simultaneousAction = _simultaneousAction;
         newAction._initiator = initiator;
         newAction._targets = targets;
 
