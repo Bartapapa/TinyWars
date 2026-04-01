@@ -21,6 +21,11 @@ public class CombatPhase
 
     public bool EnactNextPhaseAction()
     {
+        for (int i = 0; i < _phaseActions.Count; i++)
+        {
+            Debug.Log(_phaseActions[i]);
+        }
+
         if (_phaseActions.Count <= 0)
         {
             //No more actions.

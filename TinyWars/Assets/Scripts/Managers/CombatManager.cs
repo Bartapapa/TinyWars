@@ -19,8 +19,10 @@ public class CombatManager : MonoBehaviour
     public Action_ClearCorpse ClearCorpseAction;
 
     [Header("TEST BATTLE")]
-    public List<CombatHandler> PlayerTeam = new List<CombatHandler>();
-    public List<CombatHandler> EnemyTeam = new List<CombatHandler>();
+    [SerializeField] [ReadOnlyInspector] private List<CombatHandler> _playerTeam = new List<CombatHandler>();
+    [SerializeField] [ReadOnlyInspector] private List<CombatHandler> _enemyTeam = new List<CombatHandler>();
+    public List<CombatHandler> PlayerTeam { get { return _playerTeam; } }
+    public List<CombatHandler> EnemyTeam { get { return _enemyTeam; } }
 
     private Coroutine _phaseSequenceCo = null;
     public bool UnderGoingPhaseSequence { get { return _phaseSequenceCo != null; } }
@@ -46,7 +48,7 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    public void StartCombat()
+    public void StartCombat(BattleField battleField, List<CombatHandler> playerTeam, List<CombatHandler> enemyTeam)
     {
         //Listen for action call events.
         if (EventDispatcher.Instance != null)
@@ -57,7 +59,10 @@ public class CombatManager : MonoBehaviour
 
         int maxTeamSlots = GameManager.Instance.UniversalData.MaxTeamSlots;
 
-        _battleField.InitializeBattlefield(maxTeamSlots, PlayerTeam, EnemyTeam);
+        _battleField = battleField;
+        _playerTeam = playerTeam;
+        _enemyTeam = enemyTeam;
+        _battleField.InitializeBattlefield(maxTeamSlots, playerTeam, enemyTeam);
 
         TransitionIntoCombat();
     }
@@ -251,6 +256,10 @@ public class CombatManager : MonoBehaviour
         //Remove combatants from combat. Change this, only used for debugging.
         _battleField.PlayerRow.ClearRow();
         _battleField.EnemyRow.ClearRow();
+
+        _battleField = null;
+        _playerTeam = null;
+        _enemyTeam = null;
     }
 
     private void OnActionCalled(ActionContext context)

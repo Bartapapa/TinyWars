@@ -51,8 +51,18 @@ public class Action_SpawnFighter : TWAction
                 case CombatRowSpawnPosition.None:
                     break;
                 case CombatRowSpawnPosition.FrontMost:
-                    if (!allyRow.MoveAllFightersDown()) return;
-                    allyRow.SpawnFighter(_fighterToSpawn, 0);
+                    if (!allyRow.SpawnFighter(_fighterToSpawn, 0))
+                    {
+                        if (!allyRow.MoveAllFightersDown())
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            allyRow.SpawnFighter(_fighterToSpawn, 0);
+                        }
+                    }
+
                     break;
                 case CombatRowSpawnPosition.BackMost:
                     openSlot = allyRow.GetBackmostOpenSlot();

@@ -62,8 +62,8 @@ public class GameManager : MonoBehaviour
         _recruitmentManager.Initialize();
     }
 
-    private void Start()
+    public void DBG_StartCombat(BattleField battleField, List<CombatHandler> playerTeam, List<CombatHandler> enemyTeam)
     {
-        _combatManager.StartCombat();
+        _combatManager.StartCombat(battleField, playerTeam, enemyTeam);
     }
 }

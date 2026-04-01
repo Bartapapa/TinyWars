@@ -14,6 +14,11 @@ public class BattleField : MonoBehaviour
     [SerializeField] private float _finalRowSeparation = 3f;
     [SerializeField] private float _initialRowSeparation = 10f;
 
+    [Header("DEBUG COMBAT")]
+    public bool StartCombatOnLoad = false;
+    public List<CombatHandler> PlayerTeam = new List<CombatHandler>();
+    public List<CombatHandler> EnemyTeam = new List<CombatHandler>();
+
     public Vector3 EnemyRowBasePos { get { return transform.position + (transform.right * (_finalRowSeparation * .5f)); } }
     public Vector3 PlayerRowBasePos { get { return transform.position - (transform.right * (_finalRowSeparation * .5f)); } }
     public Vector3 EnemyRowInitialPos { get { return transform.position + (transform.right * (_initialRowSeparation * .5f)); } }
@@ -21,6 +26,14 @@ public class BattleField : MonoBehaviour
 
     private int _maxSlots = 0;
 
+
+    private void Start()
+    {
+        if (StartCombatOnLoad && PlayerTeam.Count > 0 && EnemyTeam.Count > 0)
+        {
+            GameManager.Instance.DBG_StartCombat(this, PlayerTeam, EnemyTeam);
+        }
+    }
 
     public void InitializeBattlefield(int maxTeamSlots, List<CombatHandler> playerTeam, List<CombatHandler> enemyTeam)
     {

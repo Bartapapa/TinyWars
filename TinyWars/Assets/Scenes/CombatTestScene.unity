@@ -503,16 +503,8 @@ MonoBehaviour:
   _battleField: {fileID: 1246875908}
   AttackAction: {fileID: 11400000, guid: ab154d0978eeb574b8bde4e23bc49bfa, type: 2}
   ClearCorpseAction: {fileID: 11400000, guid: 07e4fb8e3ffff754fb27fecb7cb0c69e, type: 2}
-  PlayerTeam:
-  - {fileID: 6841084206482088809, guid: 0a563dc1b21ba1841bfea12e7e6aeaef, type: 3}
-  - {fileID: 1444711366701076833, guid: 834298dfd1d578647bc38e0774afd49c, type: 3}
-  - {fileID: 2885331346015824970, guid: ab458c2ba91baae4e9f18691dc26d97b, type: 3}
-  - {fileID: 7544663511912384367, guid: 4bbbaa0c259490b4d813dd49a3a5d99b, type: 3}
-  EnemyTeam:
-  - {fileID: 7544663511912384367, guid: 4bbbaa0c259490b4d813dd49a3a5d99b, type: 3}
-  - {fileID: 6841084206482088809, guid: 0a563dc1b21ba1841bfea12e7e6aeaef, type: 3}
-  - {fileID: 2885331346015824970, guid: ab458c2ba91baae4e9f18691dc26d97b, type: 3}
-  - {fileID: 1444711366701076833, guid: 834298dfd1d578647bc38e0774afd49c, type: 3}
+  _playerTeam: []
+  _enemyTeam: []
 --- !u!4 &518972626
 Transform:
   m_ObjectHideFlags: 0
@@ -544,7 +536,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &538277791
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -599,7 +591,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &756061408
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -903,6 +895,19 @@ MonoBehaviour:
   _enemyRow: {fileID: 2001641280}
   _finalRowSeparation: 3
   _initialRowSeparation: 20
+  StartCombatOnLoad: 1
+  PlayerTeam:
+  - {fileID: 2885331346015824970, guid: ab458c2ba91baae4e9f18691dc26d97b, type: 3}
+  - {fileID: 1444711366701076833, guid: 834298dfd1d578647bc38e0774afd49c, type: 3}
+  - {fileID: 7544663511912384367, guid: 4bbbaa0c259490b4d813dd49a3a5d99b, type: 3}
+  - {fileID: 6841084206482088809, guid: 0a563dc1b21ba1841bfea12e7e6aeaef, type: 3}
+  - {fileID: 1444711366701076833, guid: 834298dfd1d578647bc38e0774afd49c, type: 3}
+  EnemyTeam:
+  - {fileID: 1444711366701076833, guid: 834298dfd1d578647bc38e0774afd49c, type: 3}
+  - {fileID: 7544663511912384367, guid: 4bbbaa0c259490b4d813dd49a3a5d99b, type: 3}
+  - {fileID: 6841084206482088809, guid: 0a563dc1b21ba1841bfea12e7e6aeaef, type: 3}
+  - {fileID: 1444711366701076833, guid: 834298dfd1d578647bc38e0774afd49c, type: 3}
+  - {fileID: 6841084206482088809, guid: 0a563dc1b21ba1841bfea12e7e6aeaef, type: 3}
 --- !u!1 &1286955882
 GameObject:
   m_ObjectHideFlags: 0

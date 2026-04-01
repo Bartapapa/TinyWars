@@ -207,7 +207,14 @@ public class CombatRow : MonoBehaviour
             }
             else
             {
-                break;
+                if (_slots[i].TagHandler.HasTag(CombatState.Dead))
+                {
+                    openSlot = i;
+                }
+                else
+                {
+                    break;
+                }             
             }
         }
 
@@ -422,18 +429,32 @@ public class CombatRow : MonoBehaviour
 
     public bool SpawnFighter(CombatHandler originalFighter, int atSlot)
     {
-        //If slot isn't empty, don't spawn.
-        if (_slots[atSlot] != null) return false;
-        else
+        //If slot isn't occupied by dead character or isn't empty, don't spawn.
+        CombatHandler corpseCharacter = null;
+        if (_slots[atSlot] != null)
         {
-            CombatHandler newFighter = InitializeFighter(originalFighter, atSlot, _enemySide);
-            newFighter.AnimationHandler.PlayAnimationWithBlend("Spawn");
-            //MoveFighterUp(newFighter);
-            if (EventDispatcher.Instance)
+            if (!_slots[atSlot].TagHandler.HasTag(CombatState.Dead))
             {
-                MoveContext newContext = new MoveContext(newFighter, this, atSlot);
-                EventDispatcher.Instance.Message_FighterSpawned(ref newContext);
+                return false;
             }
+            else
+            {
+                corpseCharacter = _slots[atSlot];
+            }
+        }
+
+        if (corpseCharacter != null)
+        {
+            ClearFighterCorpse(corpseCharacter);
+        }
+
+        CombatHandler newFighter = InitializeFighter(originalFighter, atSlot, _enemySide);
+        newFighter.AnimationHandler.PlayAnimationWithBlend("Spawn");
+
+        if (EventDispatcher.Instance)
+        {
+            MoveContext newContext = new MoveContext(newFighter, this, atSlot);
+            EventDispatcher.Instance.Message_FighterSpawned(ref newContext);
         }
         return true;
     }
@@ -483,6 +504,7 @@ public class CombatRow : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
+        if (_rowPositions == null) return;
         if (_rowPositions.Length < 1) return;
 
         for (int i = 0; i < _rowPositions.Length; i++)

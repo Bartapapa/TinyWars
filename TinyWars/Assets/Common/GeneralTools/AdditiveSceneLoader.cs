@@ -8,7 +8,7 @@ public class AdditiveSceneLoader : MonoBehaviour
     [Header("SCENES TO LOAD")]
     public List<Loader.Scene> Scenes = new List<Loader.Scene>();
 
-    private void Start()
+    private void Awake()
     {
         //if playing from editor, then spawn in the Game Manager.
         if (GameManager.Instance == null)
