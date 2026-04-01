@@ -9,6 +9,9 @@ public class UIManager : MonoBehaviour
 
     public static UIManager Instance { get { return _instance; } }
 
+    [Header("OBJECT REFERENCES")]
+    public Transitioner Transitioner;
+
 
     private void Awake()
     {

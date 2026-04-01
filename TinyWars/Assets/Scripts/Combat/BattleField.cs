@@ -31,6 +31,7 @@ public class BattleField : MonoBehaviour
     {
         if (StartCombatOnLoad && PlayerTeam.Count > 0 && EnemyTeam.Count > 0)
         {
+            UIManager.Instance.Transitioner.Reveal();
             GameManager.Instance.DBG_StartCombat(this, PlayerTeam, EnemyTeam);
         }
     }
