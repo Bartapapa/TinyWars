@@ -2,10 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public struct Tag
 {
-    public readonly string Handle;
-    public readonly object Source;
+    public string Handle;
+    public object Source;
 
     public Tag(string handle, object source)
     {

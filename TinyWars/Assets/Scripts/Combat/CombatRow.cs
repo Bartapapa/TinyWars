@@ -18,33 +18,35 @@ public enum CombatRowType
 
 public class CombatRow : MonoBehaviour
 {
+    [Header("OBJECT REFERENCES")]
+    [SerializeField] private CombatRowSlot _combatRowSlotPrefab;
+    public CombatRowSlot CombatRowSlotPrefab { get { return _combatRowSlotPrefab; } }
+
     [Header("MAXIMUM SLOTS")]
     private int _maxSlots = -1;
     public int MaxSlots { get { return _maxSlots; } }
 
-    [Header("ROW POSITIONS")]
-    [SerializeField] private Vector3[] _rowPositions;
+    [Header("SLOT POSITIONS")]
+    [SerializeField] private Vector3[] _slotPositions;
     [SerializeField] private float _positionSeparation = 1.2f;
-    public Vector3[] RowPositions { get { return _rowPositions; } }
+    public Vector3[] SlotPositions { get { return _slotPositions; } }
 
     [Header("FIGHTER SLOTS")]
-    [ReadOnlyInspector][SerializeField] private CombatHandler[] _slots;
-    public CombatHandler[] Slots { get { return _slots; } }
+    [ReadOnlyInspector][SerializeField] private CombatRowSlot[] _slots;
+    public CombatRowSlot[] Slots { get { return _slots; } }
 
     private bool _enemySide = false;
     public bool EnemySide { get { return _enemySide; } }
 
-    public void Initialize(int maxSlots, List<CombatHandler> team, bool enemySide)
+    public void PlaceFighters(List<CombatHandler> team, bool enemySide)
     {
-        if (maxSlots <= 0) return;
+        if (_maxSlots <= 0) return;
 
-        _slots = new CombatHandler[maxSlots];
-        _rowPositions = CreateRowPositions(maxSlots);
         _enemySide = enemySide;
 
         for (int i = 0; i < team.Count; i++)
         {
-            if (i >= maxSlots) break;
+            if (i >= _maxSlots) break;
             else
             {
                 if (team[i] != null)
@@ -53,34 +55,56 @@ public class CombatRow : MonoBehaviour
                 }
                 else
                 {
-                    _slots[i] = null;
+                    _slots[i].Fighter = null;
                 }
             }
         }
     }
 
+    public void InitializeSlots(int maxSlots)
+    {
+        if (maxSlots <= 0) return;
+
+        _maxSlots = maxSlots;
+        _slots = new CombatRowSlot[_maxSlots];
+
+        for (int i = 0; i < _slots.Length; i++)
+        {
+            //Create individual combatrowslots.
+            CombatRowSlot newSlot = Instantiate<CombatRowSlot>(_combatRowSlotPrefab, this.transform);
+            _slots[i] = newSlot;
+        }
+
+        _slotPositions = CreateRowPositions(_maxSlots);
+    }
+
     public void ResetRowPositions(int maxSlots)
     {
-        _rowPositions = CreateRowPositions(maxSlots);
+        _slotPositions = CreateRowPositions(maxSlots);
     }
 
     private CombatHandler InitializeFighter(CombatHandler fighter, int slotIndex, bool enemySide)
     {
-        CombatHandler newFighter = Instantiate<CombatHandler>(fighter, _rowPositions[slotIndex], Quaternion.identity, this.transform);
-        //newFighter.Initialize();
+        fighter.transform.parent = this.transform.parent;
+        fighter.transform.position = _slotPositions[slotIndex];
+
+        fighter.AbilityHandler.AbilitiesStartListen();
+        fighter.TagHandler.AddTagIfNotPresent(HolderState.CannotBeDragged);
 
         if (enemySide)
         {
             //newFighter.Character.Mesh.MeshPivot.localScale = new Vector3()
-            newFighter.transform.localEulerAngles = new Vector3(0, 180, 0);
-            newFighter.Character.Mesh.FlipFacing();
+            fighter.transform.localEulerAngles = new Vector3(0, 90, 0);
+            fighter.Character.Mesh.FlipFacing();
         }
         else
         {
-            newFighter.transform.localEulerAngles = Vector3.zero;
+            fighter.transform.localEulerAngles = new Vector3(0, 90, 0); ;
         }
 
-        newFighter.SetCurrentCombatRow(this);
+        fighter.SetCurrentCombatRow(this);
+
+        //DEBUG
         string teamName = "";
         if (_enemySide)
         {
@@ -90,24 +114,27 @@ public class CombatRow : MonoBehaviour
         {
             teamName = "Player";
         }
-        newFighter.gameObject.name = teamName + "_" + newFighter.Character.CharacterData.Character.ToString();
-        _slots[slotIndex] = newFighter;
+        fighter.gameObject.name = teamName + "_" + fighter.Character.CharacterData.Character.ToString();
 
-        return newFighter;
+
+        _slots[slotIndex].Fighter = fighter;
+
+        return fighter;
     }
 
     public void ClearRow()
     {
         for (int i = 0; i < _slots.Length; i++)
         {
-            if (_slots[i] != null)
+            if (_slots[i].Fighter != null)
             {
-                Destroy(_slots[i].gameObject);
+                Destroy(_slots[i].Fighter.gameObject);
             }
+            Destroy(_slots[i].gameObject);
         }
 
         _slots = null;
-        _rowPositions = null;
+        _slotPositions = null;
     }
 
     private Vector3[] CreateRowPositions(int slots)
@@ -117,13 +144,15 @@ public class CombatRow : MonoBehaviour
         {
             Vector3 pos = transform.position - (transform.forward * i * _positionSeparation);
             positions[i] = pos;
+            _slots[i].transform.position = pos;
+            _slots[i].transform.rotation = this.transform.rotation;
         }
         return positions;
     }
 
     public CombatHandler GetFighterAtIndex(int index)
     {
-        return _slots[index];
+        return _slots[index].Fighter;
     }
 
     public int GetFighterSlotIndex(CombatHandler fighter)
@@ -131,7 +160,7 @@ public class CombatRow : MonoBehaviour
         int foundIndex = -1;
         for (int i = 0; i < _slots.Length; i++)
         {
-            if (_slots[i] == fighter)
+            if (_slots[i].Fighter == fighter)
             {
                 foundIndex = i;
                 break;
@@ -145,18 +174,18 @@ public class CombatRow : MonoBehaviour
         List<CombatHandler> currentFighters = new List<CombatHandler>();
         for (int i = 0; i < _slots.Length -1; i++)
         {
-            if (_slots[i] != null)
+            if (_slots[i].Fighter != null)
             {
                 if (mustBeLiving)
                 {
-                    if (!_slots[i].TagHandler.HasTag(CombatState.Dead))
+                    if (!_slots[i].Fighter.TagHandler.HasTag(CombatState.Dead))
                     {
-                        currentFighters.Add(_slots[i]);
+                        currentFighters.Add(_slots[i].Fighter);
                     }
                 }
                 else
                 {
-                    currentFighters.Add(_slots[i]);
+                    currentFighters.Add(_slots[i].Fighter);
                 }
             }
         }
@@ -169,11 +198,11 @@ public class CombatRow : MonoBehaviour
         List<CombatHandler> currentFighters = new List<CombatHandler>();
         for (int i = 0; i < _slots.Length - 1; i++)
         {
-            if (_slots[i] != null)
+            if (_slots[i].Fighter != null)
             {
-                if (_slots[i].TagHandler.HasTag(CombatState.Dead))
+                if (_slots[i].Fighter.TagHandler.HasTag(CombatState.Dead))
                 {
-                    currentFighters.Add(_slots[i]);
+                    currentFighters.Add(_slots[i].Fighter);
                 }
             }
         }
@@ -186,7 +215,7 @@ public class CombatRow : MonoBehaviour
         int openSlot = -1;
         for (int i = 0; i < _slots.Length; i++)
         {
-            if (_slots == null)
+            if (_slots[i].Fighter == null)
             {
                 openSlot = i;
                 break;
@@ -201,13 +230,13 @@ public class CombatRow : MonoBehaviour
         int openSlot = -1;
         for (int i = _slots.Length -1; i >= 0; i--)
         {
-            if (_slots[i] == null)
+            if (_slots[i].Fighter == null)
             {
                 openSlot = i;
             }
             else
             {
-                if (_slots[i].TagHandler.HasTag(CombatState.Dead))
+                if (_slots[i].Fighter.TagHandler.HasTag(CombatState.Dead))
                 {
                     openSlot = i;
                 }
@@ -224,7 +253,7 @@ public class CombatRow : MonoBehaviour
     public void PlaceFighterAtSlot(CombatHandler fighter, int i)
     {
         if (i >= _slots.Length || i < 0) return;
-        _slots[i] = fighter;
+        _slots[i].Fighter = fighter;
     }
 
     public void PlaceFighter(CombatHandler fighter)
@@ -232,7 +261,7 @@ public class CombatRow : MonoBehaviour
         int fighterSlotIndex = -1;
         for (int i = 0; i < _slots.Length; i++)
         {
-            if (_slots[i] == null)
+            if (_slots[i].Fighter == null)
             {
                 fighterSlotIndex = i;
                 break;
@@ -248,7 +277,7 @@ public class CombatRow : MonoBehaviour
     public void RemoveFighterAtSlot(int i)
     {
         if (i >= _slots.Length || i < 0) return;
-        _slots[i] = null;
+        _slots[i].Fighter = null;
     }
 
     public void RemoveFighter(CombatHandler fighter)
@@ -256,7 +285,7 @@ public class CombatRow : MonoBehaviour
         int fighterIndex = -1;
         for (int i = 0; i < _slots.Length; i++)
         {
-            if (_slots[i] == fighter)
+            if (_slots[i].Fighter == fighter)
             {
                 fighterIndex = i;
                 break;
@@ -290,18 +319,18 @@ public class CombatRow : MonoBehaviour
 
     public void MoveFighterToSlotIndex(CombatHandler fighter, int toSlotIndex)
     {
-        if (_slots[toSlotIndex] != null)
+        if (_slots[toSlotIndex].Fighter != null)
         {
             SwitchFighterSlots(fighter, GetFighterAtIndex(toSlotIndex));
         }
         else
         {
             int fighterIndex = GetFighterSlotIndex(fighter);
-            _slots[fighterIndex] = null;
-            _slots[toSlotIndex] = fighter;
+            _slots[fighterIndex].Fighter = null;
+            _slots[toSlotIndex].Fighter = fighter;
 
             //Move fighter to new position
-            fighter.MoveToPosition(_rowPositions[toSlotIndex]);
+            fighter.MoveToPosition(_slotPositions[toSlotIndex]);
 
             if (EventDispatcher.Instance)
             {
@@ -318,8 +347,8 @@ public class CombatRow : MonoBehaviour
         int fighter1Slot = GetFighterSlotIndex(fighter1);
         int fighter2Slot = GetFighterSlotIndex(fighter2);
 
-        _slots[fighter1Slot] = null;
-        _slots[fighter2Slot] = null;
+        _slots[fighter1Slot].Fighter = null;
+        _slots[fighter2Slot].Fighter = null;
         MoveFighterToSlotIndex(fighter1, fighter2Slot);
         MoveFighterToSlotIndex(fighter2, fighter1Slot);
 
@@ -335,15 +364,15 @@ public class CombatRow : MonoBehaviour
         if (fighterIndex == _slots.Length - 1) return enoughSpace;
         int slotToCheck = fighterIndex + 1;
 
-        if (_slots[slotToCheck] != null)
+        if (_slots[slotToCheck].Fighter != null)
         {
-            if (_slots[slotToCheck].TagHandler.HasTag(CombatState.Dead))
+            if (_slots[slotToCheck].Fighter.TagHandler.HasTag(CombatState.Dead))
             {
-                ClearFighterCorpse(_slots[slotToCheck]);
+                ClearFighterCorpse(_slots[slotToCheck].Fighter);
             }
         }
 
-        if (_slots[slotToCheck] == null)
+        if (_slots[slotToCheck].Fighter == null)
         {
             emptySlotBehindIndex = slotToCheck;
             enoughSpace = true;
@@ -365,9 +394,9 @@ public class CombatRow : MonoBehaviour
 
         for (int i = _slots.Length -1; i >= 0; i--)
         {
-            if (_slots[i] != null && openSlotInBack)
+            if (_slots[i].Fighter != null && openSlotInBack)
             {
-                CombatHandler fighter = _slots[i];
+                CombatHandler fighter = _slots[i].Fighter;
                 MoveFighterDown(fighter);
             }
             else
@@ -386,15 +415,15 @@ public class CombatRow : MonoBehaviour
 
         for (int i = 0; i < fighterIndex; i++)
         {
-            if (_slots[i] != null)
+            if (_slots[i].Fighter != null)
             {
-                if (_slots[i].TagHandler.HasTag(CombatState.Dead))
+                if (_slots[i].Fighter.TagHandler.HasTag(CombatState.Dead))
                 {
-                    ClearFighterCorpse(_slots[i]);
+                    ClearFighterCorpse(_slots[i].Fighter);
                 }
             }
 
-            if (_slots[i] == null)
+            if (_slots[i].Fighter == null)
             {
                 frontmostEmptySlot = i;
                 break;
@@ -413,9 +442,9 @@ public class CombatRow : MonoBehaviour
 
         for (int i = 0; i < _slots.Length; i++)
         {
-            if (_slots[i] != null && openSlotInFront)
+            if (_slots[i].Fighter != null && openSlotInFront)
             {
-                CombatHandler fighter = _slots[i];
+                CombatHandler fighter = _slots[i].Fighter;
                 MoveFighterUp(fighter);
                 i--;
                 openSlotInFront = false;
@@ -431,15 +460,15 @@ public class CombatRow : MonoBehaviour
     {
         //If slot isn't occupied by dead character or isn't empty, don't spawn.
         CombatHandler corpseCharacter = null;
-        if (_slots[atSlot] != null)
+        if (_slots[atSlot].Fighter != null)
         {
-            if (!_slots[atSlot].TagHandler.HasTag(CombatState.Dead))
+            if (!_slots[atSlot].Fighter.TagHandler.HasTag(CombatState.Dead))
             {
                 return false;
             }
             else
             {
-                corpseCharacter = _slots[atSlot];
+                corpseCharacter = _slots[atSlot].Fighter;
             }
         }
 
@@ -448,7 +477,9 @@ public class CombatRow : MonoBehaviour
             ClearFighterCorpse(corpseCharacter);
         }
 
-        CombatHandler newFighter = InitializeFighter(originalFighter, atSlot, _enemySide);
+        CombatHandler newFighter = Instantiate<CombatHandler>(originalFighter);
+        newFighter.Initialize();
+        InitializeFighter(newFighter, atSlot, _enemySide);
         newFighter.AnimationHandler.PlayAnimationWithBlend("Spawn");
 
         if (EventDispatcher.Instance)
@@ -463,11 +494,16 @@ public class CombatRow : MonoBehaviour
     {
         List<CombatHandler> deadCombatants = new List<CombatHandler>();
 
-        foreach(CombatHandler combatant in _slots)
+
+
+        foreach(CombatRowSlot slot in _slots)
         {
-            if (combatant != null && combatant.TagHandler.HasTag(CombatState.Dead))
+            if (slot.Fighter != null)
             {
-                deadCombatants.Add(combatant);
+                if (slot.Fighter.TagHandler.HasTag(CombatState.Dead))
+                {
+                    deadCombatants.Add(slot.Fighter);
+                }
             }
         }
 
@@ -477,12 +513,15 @@ public class CombatRow : MonoBehaviour
     public bool AreAllCombatantsDead()
     {
         bool areAllDead = true;
-        foreach(CombatHandler combatant in _slots)
+        foreach(CombatRowSlot slot in _slots)
         {
-            if (combatant != null && !combatant.TagHandler.HasTag(CombatState.Dead))
+            if (slot.Fighter != null)
             {
-                areAllDead = false;
-                break;
+                if (!slot.Fighter.TagHandler.HasTag(CombatState.Dead))
+                {
+                    areAllDead = false;
+                    break;
+                }
             }
         }
         return areAllDead;
@@ -491,9 +530,9 @@ public class CombatRow : MonoBehaviour
     public bool AreAllCombatantsCleared()
     {
         bool areAllCleared = true;
-        foreach (CombatHandler combatant in _slots)
+        foreach (CombatRowSlot slot in _slots)
         {
-            if (combatant != null)
+            if (slot.Fighter != null)
             {
                 areAllCleared = false;
                 break;
@@ -504,13 +543,13 @@ public class CombatRow : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        if (_rowPositions == null) return;
-        if (_rowPositions.Length < 1) return;
+        if (_slotPositions == null) return;
+        if (_slotPositions.Length < 1) return;
 
-        for (int i = 0; i < _rowPositions.Length; i++)
+        for (int i = 0; i < _slotPositions.Length; i++)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(_rowPositions[i], .25f);
+            Gizmos.DrawWireSphere(_slotPositions[i], .25f);
         }
     }
 }

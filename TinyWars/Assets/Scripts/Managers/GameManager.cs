@@ -18,6 +18,8 @@ public class GameManager : MonoBehaviour
     public RecruitmentManager RecruitmentManager { get { return _recruitmentManager; } }
     [SerializeField] private PartyManager _partyManager;
     public PartyManager PartyManager { get { return _partyManager; } }
+    [SerializeField] PointerManager _pointerManager;
+    public PointerManager PointerManager { get { return _pointerManager; } }
 
     [Header("DATA")]
     [SerializeField] private SOUniversalData _universalData;
@@ -56,6 +58,7 @@ public class GameManager : MonoBehaviour
         //High priority.
         _eventDispatcher.Initialize();
         _partyManager.Initialize();
+        _pointerManager.Initialize();
 
         //Low priority.
         _combatManager.Initialize();

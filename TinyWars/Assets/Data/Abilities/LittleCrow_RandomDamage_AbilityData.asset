@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _internalName: littleCrow_randomDamage
   _abilityName: Bully
+  _abilityDescription: description
   _abilityIcon: {fileID: 21300000, guid: 0f0cb6176583be647b22474b63f6d68d, type: 3}
   _listenedMessages: 04000000
-  _lvl1_abilityActions:
+  _abilityActions:
   - {fileID: 11400000, guid: aa20082f60aa0324e9c14887932b90db, type: 2}
   _canLevelUp: 1

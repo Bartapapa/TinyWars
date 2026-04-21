@@ -7,7 +7,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "TinyWars/Action/Die", fileName = "Die_ActionData")]
 public class Action_Die : TWAction
 {
-    public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets)
+    public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets, int actionLevel = 1)
     {
         Action_Die newAction = CreateInstance<Action_Die>();
         newAction._actionType = _actionType;

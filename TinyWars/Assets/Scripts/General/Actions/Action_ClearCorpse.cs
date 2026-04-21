@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "TinyWars/Action/ClearCorpse", fileName = "ClearCorpse_ActionData")]
 public class Action_ClearCorpse : TWAction
 {
-    public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets)
+    public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets, int actionLevel = 1)
     {
         Action_ClearCorpse newAction = CreateInstance<Action_ClearCorpse>();
         newAction._actionType = _actionType;

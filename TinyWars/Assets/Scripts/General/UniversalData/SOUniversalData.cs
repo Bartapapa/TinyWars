@@ -6,7 +6,11 @@ using System;
 [CreateAssetMenu(menuName = "TinyWars/Data/UniversalData", fileName = "UniversalData")]
 public class SOUniversalData : ScriptableObject
 {
-    [Header("XP TRACK")]
+    [Header("LEVELING")]
+    [SerializeField] private float _levelUpMaxHealthIncrease = 1f;
+    public float LevelUpMaxHealthIncrease { get { return _levelUpMaxHealthIncrease; } }
+    [SerializeField] private float _levelUpAttackIncrease = 1f;
+    public float LevelUpAttackIncrease { get { return _levelUpAttackIncrease; } }
     [SerializeField] private AnimationCurve _xpTrack = new AnimationCurve();
     public AnimationCurve XPTrack { get { return _xpTrack; } }
 

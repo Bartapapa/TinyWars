@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class Action_AttackRandomEnemyTarget : TWAction
 {
-    public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets)
+    public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets, int actionLevel = 1)
     {
         Action_AttackRandomEnemyTarget newAction = CreateInstance<Action_AttackRandomEnemyTarget>();
         newAction._actionType = _actionType;

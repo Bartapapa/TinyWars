@@ -42,7 +42,12 @@ public class DeathBehavior : MonoBehaviour
         _character.Mesh.Yeet(randomDirection * forceIntensity, randomTorque);
 
         //Hide stats.
-        _UICanvas.gameObject.SetActive(false);
+        ToggleUICanvas(false);
+    }
+
+    private void ToggleUICanvas(bool show)
+    {
+        _UICanvas.gameObject.SetActive(show);
     }
 
     public void DeathBehaviorDie()
@@ -57,5 +62,13 @@ public class DeathBehavior : MonoBehaviour
             ActionContext newContext = new ActionContext(newAction);
             EventDispatcher.Instance.Message_ActionCalled(ref newContext);
         }
+    }
+
+    public void DeathBehaviorRevive()
+    {
+        _tagHandler.RemoveTag(CombatState.Dead, true);
+
+        //Show stats.
+        ToggleUICanvas(true);
     }
 }

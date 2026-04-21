@@ -21,11 +21,11 @@ public enum ModifierApplicationType
 public class StatisticModifier
 {
     public float Value;
-    public readonly StatisticModifierType Type;
-    public readonly int Priority;
-    public readonly ModifierApplicationType ApplicationType;
-    public readonly object Source;
-    public readonly Statistic AssociatedStatistic;
+    public StatisticModifierType Type;
+    public int Priority;
+    public ModifierApplicationType ApplicationType;
+    public object Source;
+    public Statistic AssociatedStatistic;
 
     public delegate void AssociatedStatisticModifierValueChangeEvent(float from, float to);
     public event AssociatedStatisticModifierValueChangeEvent AssociatedStatisticValueChanged;
@@ -63,7 +63,7 @@ public class StatisticModifier
 
     public StatisticModifier(Statistic associatedStatisic, StatisticModifierType type, ModifierApplicationType applicationType, object source) : this(0f, type, (int)type, applicationType, source, associatedStatisic) { }
 
-    private void OnAssociatedStatisticValueChanged(float from, float to)
+    protected void OnAssociatedStatisticValueChanged(float from, float to)
     {
         float oldValue = Value;
         Value = to;

@@ -34,7 +34,7 @@ public class TWAction : ScriptableObject
 
     protected bool _generated = false;
 
-    public virtual TWAction GenerateAction (GameObject initiator, List<GameObject> targets)
+    public virtual TWAction GenerateAction (GameObject initiator, List<GameObject> targets, int actionLevel = 1)
     {
         TWAction newAction = CreateInstance<TWAction>();
         newAction._actionType = _actionType;

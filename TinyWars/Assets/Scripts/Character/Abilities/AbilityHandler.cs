@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class AbilityHandler : MonoBehaviour
 {
-    private Character _character;
+    [SerializeField] private Character _character;
     public Character Character { get { return _character; } }
 
     [Header("OBJECT REFERENCES")]
@@ -19,19 +19,8 @@ public class AbilityHandler : MonoBehaviour
     [SerializeField] [ReadOnlyInspector] private List<TWAbility> _abilities = new List<TWAbility>();
     public List<TWAbility> Abilities { get { return _abilities; } }
 
-    private void Awake()
+    public void Initialize()
     {
-        _character = GetComponent<Character>();
-        if (!_character)
-        {
-            Debug.LogWarning("Warning! " + this.gameObject.name + " has no associated character. Returning.");
-            return;
-        }
-    }
-
-    private void Start()
-    {
-        //Initialize this with a method called, to be able to correctly ascertain the sequence of actions.
         EventDispatcher.Instance.CharacterUsedAbility -= OnCharacterUsedAbility;
         EventDispatcher.Instance.CharacterUsedAbility += OnCharacterUsedAbility;
 
@@ -41,15 +30,32 @@ public class AbilityHandler : MonoBehaviour
         }
     }
 
-    public void AddAbility(TWAbility ability)
+    public TWAbility AddAbility(TWAbility ability)
     {
         //Take the ability, create an instance of it, and set it into the list of abilities. These instances are going to listen to their specific contexts and events by the EventDispatcher.
         TWAbility newAbility = ability.GenerateAbility(this);
-        InitializeMessageListen(newAbility);
         _abilities.Add(newAbility);
+
+        return ability;
     }
 
-    private void InitializeMessageListen(TWAbility ability)
+    public void AbilitiesStartListen()
+    {
+        foreach(TWAbility ability in _abilities)
+        {
+            AbilityStartListen(ability);
+        }
+    }
+
+    public void AbilitiesStopListen()
+    {
+        foreach(TWAbility ability in _abilities)
+        {
+            AbilityStopListen(ability);
+        }
+    }
+
+    private void AbilityStartListen(TWAbility ability)
     {
         if (!ability.Generated)
         {
@@ -92,6 +98,18 @@ public class AbilityHandler : MonoBehaviour
                     EventDispatcher.Instance.FighterCorpseCleared -= ability.OnMessage_FighterCorpseCleared;
                     EventDispatcher.Instance.FighterCorpseCleared += ability.OnMessage_FighterCorpseCleared;
                     break;
+                case EventMessageType.FighterLevelUp:
+                    EventDispatcher.Instance.FighterLevelUp -= ability.OnMessage_FighterLevelUp;
+                    EventDispatcher.Instance.FighterLevelUp += ability.OnMessage_FighterLevelUp;
+                    break;
+                case EventMessageType.CombatStarted:
+                    EventDispatcher.Instance.CombatStarted -= ability.OnMessage_CombatStarted;
+                    EventDispatcher.Instance.CombatStarted += ability.OnMessage_CombatStarted;
+                    break;
+                case EventMessageType.CombatEnded:
+                    EventDispatcher.Instance.CombatEnded -= ability.OnMessage_CombatEnded;
+                    EventDispatcher.Instance.CombatEnded += ability.OnMessage_CombatEnded;
+                    break;
                 default:
                     break;
             }
@@ -109,19 +127,26 @@ public class AbilityHandler : MonoBehaviour
                 abilityToRemove = _abilities[i];
                 _abilities.Remove(abilityToRemove);
 
-                EventDispatcher.Instance.ActionCalled -= ability.OnMessage_ActionCalled;
-                EventDispatcher.Instance.FighterHealthReachedZero -= ability.OnMessage_FighterHealthReachedZero;
-                EventDispatcher.Instance.FighterAttacked -= ability.OnMessage_FighterAttacked;
-                EventDispatcher.Instance.FighterDamagedDefender -= ability.OnMessage_FighterDamagedDefender;
-                EventDispatcher.Instance.FighterMoved -= ability.OnMessage_FighterMoved;
-                EventDispatcher.Instance.FighterSpawned -= ability.OnMessage_FighterSpawned;
-                EventDispatcher.Instance.FighterCorpseCleared -= ability.OnMessage_FighterCorpseCleared;
-
+                AbilityStopListen(abilityToRemove);
                 break;
             }
         }
 
         return abilityToRemove != null;
+    }
+
+    private void AbilityStopListen(TWAbility ability)
+    {
+        EventDispatcher.Instance.ActionCalled -= ability.OnMessage_ActionCalled;
+        EventDispatcher.Instance.FighterHealthReachedZero -= ability.OnMessage_FighterHealthReachedZero;
+        EventDispatcher.Instance.FighterAttacked -= ability.OnMessage_FighterAttacked;
+        EventDispatcher.Instance.FighterDamagedDefender -= ability.OnMessage_FighterDamagedDefender;
+        EventDispatcher.Instance.FighterMoved -= ability.OnMessage_FighterMoved;
+        EventDispatcher.Instance.FighterSpawned -= ability.OnMessage_FighterSpawned;
+        EventDispatcher.Instance.FighterCorpseCleared -= ability.OnMessage_FighterCorpseCleared;
+        EventDispatcher.Instance.FighterLevelUp -= ability.OnMessage_FighterLevelUp;
+        EventDispatcher.Instance.CombatStarted -= ability.OnMessage_CombatStarted;
+        EventDispatcher.Instance.CombatEnded -= ability.OnMessage_CombatEnded;
     }
 
     private void OnCharacterUsedAbility(AbilityContext context)

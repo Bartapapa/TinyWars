@@ -13,7 +13,7 @@ public class Ability_ShieldBeaver_HealSelf : TWAbility
         newAbility._abilityName = this._abilityName;
         newAbility._abilityIcon = this._abilityIcon;
         newAbility._listenedMessages = this._listenedMessages;
-        newAbility._lvl1_abilityActions = this._lvl1_abilityActions;
+        newAbility._abilityActions = this._abilityActions;
         newAbility._abilityLevel = _abilityLevel;
         newAbility._canLevelUp = this._canLevelUp;
 
@@ -31,7 +31,7 @@ public class Ability_ShieldBeaver_HealSelf : TWAbility
         if (context.Defender.gameObject != _abilityHandler.gameObject) return;
         if (context.Defender.TagHandler.HasTag(CombatState.Dead)) return;
 
-        foreach (TWAction action in _lvl1_abilityActions)
+        foreach (TWAction action in _abilityActions)
         {
             if (EventDispatcher.Instance)
             {

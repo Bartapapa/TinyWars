@@ -14,6 +14,8 @@ public enum EventMessageType
     FighterSpawned,
     FighterCorpseCleared,
     FighterLevelUp,
+    CombatStarted,
+    CombatEnded,
 }
 
 public struct ActionContext
@@ -81,6 +83,20 @@ public struct AbilityContext
     }
 }
 
+public struct CombatContext
+{
+    public CombatRow PlayerRow;
+    public CombatRow EnemyRow;
+    public bool PlayerVictory;
+
+    public CombatContext(CombatRow playerRow, CombatRow enemyRow, bool playerVictory)
+    {
+        PlayerRow = playerRow;
+        EnemyRow = enemyRow;
+        PlayerVictory = playerVictory;
+    }
+}
+
 public class EventDispatcher : MonoBehaviour
 {
     private static object _lockingObject = new object();
@@ -93,6 +109,10 @@ public class EventDispatcher : MonoBehaviour
     //Replace event arguments with multiple struct types relaying bits of information.
     //Such as 'DamageContext' struct, 'DeathContext' struct, etc etc...
 
+    public delegate void DefaultEvent();
+    public delegate void CombatEvent(CombatContext context);
+    public event CombatEvent CombatStarted;
+    public event CombatEvent CombatEnded;
     public delegate void ActionEvent(ActionContext context);
     public event ActionEvent ActionCalled;
     public delegate void FighterEvent(FighterContext context);
@@ -170,5 +190,15 @@ public class EventDispatcher : MonoBehaviour
     public void Message_OnCharacterUsedAbility(ref AbilityContext context)
     {
         CharacterUsedAbility?.Invoke(context);
+    }
+
+    public void Message_OnCombatStarted(ref CombatContext context)
+    {
+        CombatStarted?.Invoke(context);
+    }
+
+    public void Message_OnCombatEnded(ref CombatContext context)
+    {
+        CombatEnded?.Invoke(context);
     }
 }

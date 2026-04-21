@@ -10,7 +10,7 @@ public class Action_DamageRandomEnemyTarget : TWAction
     [Header("DAMAGE VALUE")]
     [SerializeField] private float _damageValue = 2f;
 
-    public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets)
+    public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets, int actionLevel = 1)
     {
         Action_DamageRandomEnemyTarget newAction = CreateInstance<Action_DamageRandomEnemyTarget>();
         newAction._actionType = _actionType;

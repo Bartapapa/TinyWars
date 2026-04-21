@@ -25,13 +25,13 @@ public class Statistic
     }
     public List<StatisticModifier> StandardModifiers { get { return _statisticModifiers; } }
 
-    [ReadOnlyInspector][SerializeField] private string _name = "";
-    [ReadOnlyInspector] [SerializeField] private float _value;
-    [ReadOnlyInspector] [SerializeField] private float _baseValue = float.MinValue;
-    [ReadOnlyInspector] [SerializeField] private float _minValue = float.MinValue;
-    [ReadOnlyInspector] [SerializeField] private float _maxValue = float.MaxValue;
-    [ReadOnlyInspector] [SerializeField] private readonly List<StatisticModifier> _statisticModifiers;
-    private readonly List<StatisticModifier> _permanentStatisticModifiersToApply;
+    [ReadOnlyInspector] [SerializeField] protected string _name = "";
+    [ReadOnlyInspector] [SerializeField] protected float _value;
+    [ReadOnlyInspector] [SerializeField] protected float _baseValue = float.MinValue;
+    [ReadOnlyInspector] [SerializeField] protected float _minValue = float.MinValue;
+    [ReadOnlyInspector] [SerializeField] protected float _maxValue = float.MaxValue;
+    [ReadOnlyInspector] [SerializeField] protected List<StatisticModifier> _statisticModifiers;
+    protected List<StatisticModifier> _permanentStatisticModifiersToApply;
 
     public delegate void StatisticValueChangeEvent(float from, float to);
     public event StatisticValueChangeEvent StatisticValueChanged;

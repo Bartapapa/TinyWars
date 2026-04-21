@@ -5,48 +5,36 @@ using System;
 
 public class ExperienceHandler : MonoBehaviour
 {
-    private CombatHandler _combatHandler;
+    [Header("OBJECT REFERENCES")]
+    [SerializeField] private CombatHandler _combatHandler;
     public CombatHandler CombatHandler { get { return _combatHandler; } }
     public StatisticHandler StatisticHandler { get { return _statisticHandler; } }
-    private StatisticHandler _statisticHandler;
+    [SerializeField] private StatisticHandler _statisticHandler;
 
 
     [Header("LEVEL")]
     [SerializeField][ReadOnlyInspector] private Statistic _currentLevel;
-    public int CurrentLevel { get { return _currentLevel.IntValue; } }
+    public int CurrentLevelInt { get { return _currentLevel.IntValue; } }
+    public Statistic CurrentLevelStat { get { return _currentLevel; } }
 
     [Header("EXPERIENCE")]
     [SerializeField][ReadOnlyInspector] private Statistic _currentXP;
-    public float CurrentXP { get { return _currentXP.Value; } }
+    public float CurrentXPValue { get { return _currentXP.Value; } }
     [SerializeField][ReadOnlyInspector] private Statistic _XPgainMultiplier;
-    public float XPGainMultiplier { get { return _XPgainMultiplier.Value; } }
+    public float XPGainMultiplierValue { get { return _XPgainMultiplier.Value; } }
     [SerializeField][ReadOnlyInspector] private Statistic _nextXPThreshold;
-    public float NextXPThreshold { get { return _nextXPThreshold.Value; } }
+    public float NextXPThresholdValue { get { return _nextXPThreshold.Value; } }
 
     private bool _initialized = false;
 
-    public void Initialize(int atLevel)
+    public void Initialize()
     {
-        _combatHandler = GetComponent<CombatHandler>();
-        if (!_combatHandler)
-        {
-            Debug.LogWarning("Warning! " + this.gameObject.name + " has no associated combat handler. Returning.");
-            return;
-        }
-
-        _statisticHandler = GetComponent<StatisticHandler>();
-        if (!_statisticHandler)
-        {
-            Debug.LogWarning("Warning! " + this.gameObject.name + " has no associated statistic handler. Returning.");
-            return;
-        }
-
-        _currentLevel = _statisticHandler.CreateStat("CurrentLevel", atLevel, 1f);
+        _currentLevel = _statisticHandler.CreateStat("CurrentLevel", 1f, 1f);
         _currentXP = _statisticHandler.CreateStat("CurrentXP", 0f, 0f);
         _XPgainMultiplier = _statisticHandler.CreateStat("XPGainMultiplier", 1f, 0f);
         _nextXPThreshold = _statisticHandler.CreateStat("NextXPThreshold", 0f, 0f);
 
-        SetNextXPThreshold(CurrentLevel);
+        SetNextXPThreshold(CurrentLevelInt);
 
         _currentXP.StatisticValueChanged -= OnCurrentXPChangedValue;
         _currentXP.StatisticValueChanged += OnCurrentXPChangedValue;
@@ -62,7 +50,7 @@ public class ExperienceHandler : MonoBehaviour
         {
             //Increased XP, such as after combat.
             //Upon XP gain, increase health and attack by that same value.
-            if (to > NextXPThreshold)
+            if (to > NextXPThresholdValue)
             {
                 LevelUp();
             }
@@ -74,17 +62,18 @@ public class ExperienceHandler : MonoBehaviour
         }
     }
 
-    private void LevelUp()
+    public void LevelUp()
     {
         //Add a level, and reset current XP.
         _currentLevel.AddModifier(new StatisticModifier(1f, StatisticModifierType.Flat, ModifierApplicationType.Permanent));
         _currentXP.AddModifier(new StatisticModifier(0f, StatisticModifierType.Force, ModifierApplicationType.Permanent));
 
-        SetNextXPThreshold(CurrentLevel);
+        SetNextXPThreshold(CurrentLevelInt);
 
         //Apply health and damage bonuses appropriate to character combat data.
-        float healthIncrease = _combatHandler.CombatData.HealthIncrease;
-        float attackIncrease = _combatHandler.CombatData.AttackIncrease;
+        float healthIncrease = GameManager.Instance.UniversalData.LevelUpMaxHealthIncrease;
+        float attackIncrease = GameManager.Instance.UniversalData.LevelUpAttackIncrease;
+        _combatHandler.MaxHealth.AddModifier(new StatisticModifier(healthIncrease, StatisticModifierType.Flat, ModifierApplicationType.Permanent));
         _combatHandler.Health.AddModifier(new StatisticModifier(healthIncrease, StatisticModifierType.Flat, ModifierApplicationType.Permanent));
         _combatHandler.Attack.AddModifier(new StatisticModifier(attackIncrease, StatisticModifierType.Flat, ModifierApplicationType.Permanent));
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CombatManager : MonoBehaviour
@@ -13,16 +14,12 @@ public class CombatManager : MonoBehaviour
     [Header("BATTLEFIELD")]
     [SerializeField] private BattleField _battleField;
     public BattleField CurrentBattleField { get { return _battleField; } }
+    private List<CombatHandler> _currentEnemyParty = new List<CombatHandler>();
+    public List<CombatHandler> CurrentEnemyParty { get { return _currentEnemyParty; } }
 
     [Header("UNIVERSAL ACTIONS")]
     public Action_Attack AttackAction;
     public Action_ClearCorpse ClearCorpseAction;
-
-    [Header("TEST BATTLE")]
-    [SerializeField] [ReadOnlyInspector] private List<CombatHandler> _playerTeam = new List<CombatHandler>();
-    [SerializeField] [ReadOnlyInspector] private List<CombatHandler> _enemyTeam = new List<CombatHandler>();
-    public List<CombatHandler> PlayerTeam { get { return _playerTeam; } }
-    public List<CombatHandler> EnemyTeam { get { return _enemyTeam; } }
 
     private Coroutine _phaseSequenceCo = null;
     public bool UnderGoingPhaseSequence { get { return _phaseSequenceCo != null; } }
@@ -48,6 +45,11 @@ public class CombatManager : MonoBehaviour
         }
     }
 
+    public void SetEnemyParty(List<CombatHandler> enemyParty)
+    {
+        _currentEnemyParty = enemyParty;
+    }
+
     public void StartCombat(BattleField battleField, List<CombatHandler> playerTeam, List<CombatHandler> enemyTeam)
     {
         //Listen for action call events.
@@ -60,38 +62,43 @@ public class CombatManager : MonoBehaviour
         int maxTeamSlots = GameManager.Instance.UniversalData.MaxTeamSlots;
 
         _battleField = battleField;
-        _playerTeam = playerTeam;
-        _enemyTeam = enemyTeam;
+        _battleField.PlayerRow.transform.position = _battleField.PlayerRowPreFightPos;
+        _battleField.EnemyRow.transform.position = _battleField.EnemyRowPreFightPos;
         _battleField.InitializeBattlefield(maxTeamSlots, playerTeam, enemyTeam);
 
-        TransitionIntoCombat();
+        TransitionIntoPreCombat();
     }
 
-    private void TransitionIntoCombat()
+    private void TransitionIntoPreCombat()
     {
-        StartCoroutine(CombatTransitionCo());
+        StartCoroutine(PreCombatTransitionCo());
     }
 
-    private IEnumerator CombatTransitionCo()
+    private IEnumerator PreCombatTransitionCo()
     {
-        float transitionDuration = 3f * GameManager.Instance.ActionTime;
+        float baseDuration = 3f;
+        float transitionDuration = baseDuration * GameManager.Instance.ActionTime;
         float transitionTimer = 0f;
+
+        _battleField.PlayerRow.transform.position = _battleField.PlayerRowPreFightPos;
+        _battleField.EnemyRow.transform.position = _battleField.EnemyRowPreFightPos;
+        _battleField.ResetRowPositions();
 
         for (int i = 0; i < _battleField.PlayerRow.Slots.Length; i++)
         {
-            if (_battleField.PlayerRow.Slots[i] != null)
+            if (_battleField.PlayerRow.Slots[i].Fighter != null)
             {
-                _battleField.PlayerRow.Slots[i].gameObject.transform.position = _battleField.PlayerRowInitialPos;
-                _battleField.PlayerRow.Slots[i].MoveToPosition(_battleField.PlayerRow.RowPositions[i], 3f);
+                _battleField.PlayerRow.Slots[i].Fighter.transform.position = _battleField.PlayerRowInitialPos;
+                _battleField.PlayerRow.Slots[i].Fighter.MoveToPosition(_battleField.PlayerRow.SlotPositions[i], baseDuration);
             }
         }
 
         for (int i = 0; i < _battleField.PlayerRow.Slots.Length; i++)
         {
-            if (_battleField.EnemyRow.Slots[i] != null)
+            if (_battleField.EnemyRow.Slots[i].Fighter != null)
             {
-                _battleField.EnemyRow.Slots[i].gameObject.transform.position = _battleField.EnemyRowInitialPos;
-                _battleField.EnemyRow.Slots[i].MoveToPosition(_battleField.EnemyRow.RowPositions[i], 3f);
+                _battleField.EnemyRow.Slots[i].Fighter.transform.position = _battleField.EnemyRowInitialPos;
+                _battleField.EnemyRow.Slots[i].Fighter.MoveToPosition(_battleField.EnemyRow.SlotPositions[i], baseDuration);
             }
         }
 
@@ -101,8 +108,58 @@ public class CombatManager : MonoBehaviour
             yield return null;
         }
 
-        _battleField.PlayerRow.MoveAllFightersUp();
-        _battleField.EnemyRow.MoveAllFightersUp();
+        CombatContext context = new CombatContext(_battleField.PlayerRow, _battleField.EnemyRow, true);
+        EventDispatcher.Instance.Message_OnCombatStarted(ref context);
+
+        StartPreCombatSequence();
+    }
+
+    private void StartPreCombatSequence()
+    {
+        if (PhaseCheck())
+        {
+            _phaseSequenceCo = StartCoroutine(PhaseSequenceCo(true));
+        }
+        else
+        {
+            _battleField.PlayerRow.MoveAllFightersUp();
+            _battleField.EnemyRow.MoveAllFightersUp();
+
+            StartCoroutine(CombatTransitionCo());
+        }
+    }
+
+    private IEnumerator CombatTransitionCo()
+    {
+        float baseDuration = 1f;
+        float transitionDuration = baseDuration * GameManager.Instance.ActionTime;
+        float transitionTimer = 0f;
+
+        _battleField.PlayerRow.transform.position = _battleField.PlayerRowBasePos;
+        _battleField.EnemyRow.transform.position = _battleField.EnemyRowBasePos;
+        _battleField.ResetRowPositions();
+
+        for (int i = 0; i < _battleField.PlayerRow.Slots.Length; i++)
+        {
+            if (_battleField.PlayerRow.Slots[i].Fighter != null)
+            {
+                _battleField.PlayerRow.Slots[i].Fighter.MoveToPosition(_battleField.PlayerRow.SlotPositions[i], baseDuration);
+            }
+        }
+
+        for (int i = 0; i < _battleField.PlayerRow.Slots.Length; i++)
+        {
+            if (_battleField.EnemyRow.Slots[i].Fighter != null)
+            {
+                _battleField.EnemyRow.Slots[i].Fighter.MoveToPosition(_battleField.EnemyRow.SlotPositions[i], baseDuration);
+            }
+        }
+
+        while (transitionTimer < transitionDuration)
+        {
+            transitionTimer += Time.deltaTime;
+            yield return null;
+        }
 
         StartCombatSequence();
     }
@@ -129,7 +186,7 @@ public class CombatManager : MonoBehaviour
 
         if (PhaseCheck())
         {
-            _phaseSequenceCo = StartCoroutine(PhaseSequenceCo());
+            _phaseSequenceCo = StartCoroutine(PhaseSequenceCo(false));
         }
         else
         {
@@ -172,7 +229,7 @@ public class CombatManager : MonoBehaviour
                     _currentPhase.PhaseActions.Add(enemyClearCorpseAction);
                 }
 
-                _phaseSequenceCo = StartCoroutine(PhaseSequenceCo());
+                _phaseSequenceCo = StartCoroutine(PhaseSequenceCo(false));
 
                 _battleField.PlayerRow.MoveAllFightersUp();
                 _battleField.EnemyRow.MoveAllFightersUp();
@@ -182,15 +239,15 @@ public class CombatManager : MonoBehaviour
                 //Otherwise, attack and proceed as normal.
                 _currentPhase = new CombatPhase();
                 List<GameObject> playerTarget = new List<GameObject>();
-                playerTarget.Add(_battleField.EnemyRow.Slots[0].gameObject);
+                playerTarget.Add(_battleField.EnemyRow.Slots[0].Fighter.gameObject);
                 List<GameObject> enemyTarget = new List<GameObject>();
-                enemyTarget.Add(_battleField.PlayerRow.Slots[0].gameObject);
-                TWAction playerAttackAction = AttackAction.GenerateAction(_battleField.PlayerRow.Slots[0].gameObject, playerTarget);
-                TWAction enemyAttackAction = AttackAction.GenerateAction(_battleField.EnemyRow.Slots[0].gameObject, enemyTarget);
+                enemyTarget.Add(_battleField.PlayerRow.Slots[0].Fighter.gameObject);
+                TWAction playerAttackAction = AttackAction.GenerateAction(_battleField.PlayerRow.Slots[0].Fighter.gameObject, playerTarget);
+                TWAction enemyAttackAction = AttackAction.GenerateAction(_battleField.EnemyRow.Slots[0].Fighter.gameObject, enemyTarget);
                 _currentPhase.PhaseActions.Add(playerAttackAction);
                 _currentPhase.PhaseActions.Add(enemyAttackAction);
 
-                _phaseSequenceCo = StartCoroutine(PhaseSequenceCo());
+                _phaseSequenceCo = StartCoroutine(PhaseSequenceCo(false));
             }
         }
     }
@@ -208,7 +265,7 @@ public class CombatManager : MonoBehaviour
         return proceedToNextPhase;
     }
 
-    private IEnumerator PhaseSequenceCo()
+    private IEnumerator PhaseSequenceCo(bool preCombat)
     {
         _currentPhase.SortPhaseActions();
 
@@ -223,21 +280,28 @@ public class CombatManager : MonoBehaviour
         }
 
         _phaseSequenceCo = null;
-        OnActionEnded();
+        OnActionEnded(preCombat);
     }
 
-    private void OnActionEnded()
+    private void OnActionEnded(bool preCombat)
     {
         //Check if current phase still has actions to process.
         if (_currentPhase.HasActionsToProcess)
         {
             //If yes, process next action.
-            _phaseSequenceCo = StartCoroutine(PhaseSequenceCo());
+            _phaseSequenceCo = StartCoroutine(PhaseSequenceCo(preCombat));
         }
         else
         {
             //If no, start new combat sequence.
-            StartCombatSequence();
+            if (preCombat)
+            {
+                StartPreCombatSequence();
+            }
+            else
+            {
+                StartCombatSequence();
+            }
         }
     }
 
@@ -254,12 +318,52 @@ public class CombatManager : MonoBehaviour
         //Initiate recruitment phase if possible.
 
         //Remove combatants from combat. Change this, only used for debugging.
-        _battleField.PlayerRow.ClearRow();
-        _battleField.EnemyRow.ClearRow();
+        //_battleField.PlayerRow.ClearRow();
+
+        for (int i = 0; i < PartyManager.Instance.CurrentParty.Count; i++)
+        {
+            CombatHandler fighter = PartyManager.Instance.CurrentParty[i];
+            if (fighter != null)
+            {
+                fighter.Character.Mesh.ResetState();
+            }
+        }
+
+        for (int i = 0; i < _currentEnemyParty.Count; i++)
+        {
+            CombatHandler fighter = _currentEnemyParty[i];
+            if (fighter != null)
+            {
+                fighter.Character.Mesh.ResetState();
+            }
+        }
+
+        //Should destroy all fighters that aren't needed - essentially any enemy that appeared DURING the fight. Perhaps a value to set when spawning a character mid-combat
+        _battleField.PlayerRow.PlaceFighters(PartyManager.Instance.CurrentParty, false);
+        for (int i = 0; i < _battleField.PlayerRow.Slots.Length; i++)
+        {
+            CombatHandler fighter = _battleField.PlayerRow.Slots[i].Fighter;
+            if (fighter != null)
+            {
+                fighter.HealToFull(true);
+                fighter.RemoveAllCombatModifiers();
+                fighter.TagHandler.ClearTagsOfHandle(HolderState.CannotBeDragged);
+            }
+        }
+
+        _battleField.EnemyRow.PlaceFighters(_currentEnemyParty, false);
+        for (int i = 0; i < _battleField.EnemyRow.Slots.Length; i++)
+        {
+            CombatHandler fighter = _battleField.EnemyRow.Slots[i].Fighter;
+            if (fighter != null)
+            {
+                fighter.HealToFull(true);
+                fighter.RemoveAllCombatModifiers();
+                fighter.TagHandler.ClearTagsOfHandle(HolderState.CannotBeDragged);
+            }
+        }
 
         _battleField = null;
-        _playerTeam = null;
-        _enemyTeam = null;
     }
 
     private void OnActionCalled(ActionContext context)

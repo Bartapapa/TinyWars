@@ -13,6 +13,8 @@ public class TWAbility : ScriptableObject
     [Header("USER-FACING")]
     [SerializeField] protected string _abilityName = "name";
     public string AbilityName { get { return _abilityName; } }
+    [SerializeField] protected string _abilityDescription = "description";
+    public string AbilityDescription { get { return _abilityDescription; } }
     [SerializeField] protected Sprite _abilityIcon;
     public Sprite AbilityIcon { get { return _abilityIcon; } }
 
@@ -21,8 +23,10 @@ public class TWAbility : ScriptableObject
     public List<EventMessageType> ListenedMessages { get { return _listenedMessages; } }
 
     [Header("ASSOCIATED ACTIONS")]
-    [SerializeField] protected List<TWAction> _lvl1_abilityActions = new List<TWAction>();
-    public List<TWAction> Lvl1AbilityActions { get { return _lvl1_abilityActions; } }
+    [SerializeField] protected List<TWAction> _abilityActions = new List<TWAction>();
+    public List<TWAction> AbilityActions { get { return _abilityActions; } }
+
+    [Header("ABILITY TARGETING")]
 
     [Header("LEVEL UP")]
     [SerializeField] protected bool _canLevelUp = true;
@@ -44,7 +48,7 @@ public class TWAbility : ScriptableObject
         newAbility._abilityName = this._abilityName;
         newAbility._abilityIcon = this._abilityIcon;
         newAbility._listenedMessages = this._listenedMessages;
-        newAbility._lvl1_abilityActions = this._lvl1_abilityActions;
+        newAbility._abilityActions = this._abilityActions;
         newAbility._abilityLevel = this._abilityLevel;
 
         newAbility._abilityHandler = handler;
@@ -126,6 +130,33 @@ public class TWAbility : ScriptableObject
     }
 
     public virtual void OnMessage_FighterCorpseCleared(FighterContext context)
+    {
+        if (!_generated)
+        {
+            Debug.LogWarning("Warning! " + this.name + " has not been properly generated. Returning.");
+            return;
+        }
+    }
+
+    public virtual void OnMessage_FighterLevelUp(FighterContext context)
+    {
+        if (!_generated)
+        {
+            Debug.LogWarning("Warning! " + this.name + " has not been properly generated. Returning.");
+            return;
+        }
+    }
+
+    public virtual void OnMessage_CombatStarted(CombatContext context)
+    {
+        if (!_generated)
+        {
+            Debug.LogWarning("Warning! " + this.name + " has not been properly generated. Returning.");
+            return;
+        }
+    }
+
+    public virtual void OnMessage_CombatEnded(CombatContext context)
     {
         if (!_generated)
         {

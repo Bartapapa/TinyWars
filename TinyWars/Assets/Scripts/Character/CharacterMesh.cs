@@ -31,6 +31,7 @@ public class CharacterMesh : MonoBehaviour
     public void Yeet(Vector3 force, Vector3 torque)
     {
         _useGravity = true;
+        _rb.isKinematic = false;
 
         _rb.AddForce(force * _yeetForce, ForceMode.VelocityChange);
         _rb.AddTorque(torque, ForceMode.VelocityChange);
@@ -60,5 +61,14 @@ public class CharacterMesh : MonoBehaviour
         }
         
         return facingRight;
+    }
+
+    public void ResetState()
+    {
+        _useGravity = false;
+
+        _rb.isKinematic = true;
+        _rb.transform.localRotation = Quaternion.Euler(Vector3.zero);
+        _rb.transform.localPosition = Vector3.zero;
     }
 }

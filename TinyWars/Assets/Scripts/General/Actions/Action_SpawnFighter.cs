@@ -12,7 +12,7 @@ public class Action_SpawnFighter : TWAction
     [SerializeField] private int _numberToSpawn = 1;
     [SerializeField] private CombatRowSpawnPosition _spawnPosition = CombatRowSpawnPosition.None;
 
-    public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets)
+    public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets, int actionLevel = 1)
     {
         Action_SpawnFighter newAction = CreateInstance<Action_SpawnFighter>();
         newAction._actionType = _actionType;

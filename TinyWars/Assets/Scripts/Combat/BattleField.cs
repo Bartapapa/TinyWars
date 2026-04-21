@@ -2,6 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public struct BattleFieldFighterDescriptor
+{
+    public CombatHandler Fighter;
+    public FighterSetupDescriptor Setup;
+}
+
 public class BattleField : MonoBehaviour
 {
     [Header("COMBAT ROWS")]
@@ -12,15 +19,18 @@ public class BattleField : MonoBehaviour
 
     [Header("ENVIRONMENT PARAMETERS")]
     [SerializeField] private float _finalRowSeparation = 3f;
+    [SerializeField] private float _preFightRowSeparation = 5.5f;
     [SerializeField] private float _initialRowSeparation = 10f;
 
     [Header("DEBUG COMBAT")]
     public bool StartCombatOnLoad = false;
-    public List<CombatHandler> PlayerTeam = new List<CombatHandler>();
-    public List<CombatHandler> EnemyTeam = new List<CombatHandler>();
+    public List<BattleFieldFighterDescriptor> PlayerTeamDescriptor = new List<BattleFieldFighterDescriptor>();
+    public List<BattleFieldFighterDescriptor> EnemyTeamDescriptor = new List<BattleFieldFighterDescriptor>();
 
     public Vector3 EnemyRowBasePos { get { return transform.position + (transform.right * (_finalRowSeparation * .5f)); } }
     public Vector3 PlayerRowBasePos { get { return transform.position - (transform.right * (_finalRowSeparation * .5f)); } }
+    public Vector3 EnemyRowPreFightPos { get { return transform.position + (transform.right * (_preFightRowSeparation * .5f)); } }
+    public Vector3 PlayerRowPreFightPos { get { return transform.position - (transform.right * (_preFightRowSeparation * .5f)); } }
     public Vector3 EnemyRowInitialPos { get { return transform.position + (transform.right * (_initialRowSeparation * .5f)); } }
     public Vector3 PlayerRowInitialPos { get { return transform.position - (transform.right * (_initialRowSeparation * .5f)); } }
 
@@ -29,10 +39,43 @@ public class BattleField : MonoBehaviour
 
     private void Start()
     {
-        if (StartCombatOnLoad && PlayerTeam.Count > 0 && EnemyTeam.Count > 0)
+        if (StartCombatOnLoad && PlayerTeamDescriptor.Count > 0 && EnemyTeamDescriptor.Count > 0)
         {
+            //Mimics having a pre-generated team beforehand. Re-use this when actually creating a team.
+
+            List<CombatHandler> instantiatedPlayerTeam = new List<CombatHandler>();
+            List<CombatHandler> instantiatedEnemyTeam = new List<CombatHandler>();
+
+            foreach(BattleFieldFighterDescriptor fighterDescriptor in PlayerTeamDescriptor)
+            {
+                CombatHandler newFighter = null;
+                if (fighterDescriptor.Fighter != null)
+                {
+                    newFighter = Instantiate<CombatHandler>(fighterDescriptor.Fighter, GameManager.Instance.transform);
+                    newFighter.Initialize();
+                    newFighter.Setup(fighterDescriptor.Setup);
+                }
+
+                instantiatedPlayerTeam.Add(newFighter);
+            }
+            PartyManager.Instance.SetCurrentParty(instantiatedPlayerTeam);
+
+            foreach (BattleFieldFighterDescriptor fighterDescriptor in EnemyTeamDescriptor)
+            {
+                CombatHandler newFighter = null;
+                if (fighterDescriptor.Fighter != null)
+                {
+                    newFighter = Instantiate<CombatHandler>(fighterDescriptor.Fighter, GameManager.Instance.transform);
+                    newFighter.Initialize();
+                    newFighter.Setup(fighterDescriptor.Setup);
+                }
+
+                instantiatedEnemyTeam.Add(newFighter);
+            }
+            CombatManager.Instance.SetEnemyParty(instantiatedEnemyTeam);
+
+            GameManager.Instance.DBG_StartCombat(this, instantiatedPlayerTeam, instantiatedEnemyTeam);
             UIManager.Instance.Transitioner.Reveal();
-            GameManager.Instance.DBG_StartCombat(this, PlayerTeam, EnemyTeam);
         }
     }
 
@@ -43,8 +86,11 @@ public class BattleField : MonoBehaviour
         _playerRow.transform.position = PlayerRowBasePos;
         _enemyRow.transform.position = EnemyRowBasePos;
 
-        _playerRow.Initialize(maxTeamSlots, playerTeam, false);
-        _enemyRow.Initialize(maxTeamSlots, enemyTeam, true);
+        _playerRow.InitializeSlots(maxTeamSlots);
+        _enemyRow.InitializeSlots(maxTeamSlots);
+
+        _playerRow.PlaceFighters(playerTeam, false);
+        _enemyRow.PlaceFighters(enemyTeam, true);
     }
 
     public void ResetRowPositions()

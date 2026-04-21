@@ -8,40 +8,14 @@ public class PartyManager : MonoBehaviour
     private static object _lockingObject = new object();
     private static PartyManager _instance = null;
 
+    public static PartyManager Instance { get { return _instance; } }
+
     [Header("PARTY")]
-    private Character[] _currentParty;
-    public Character[] CurrentParty { get { return _currentParty; } }
-    private List<Character> _totalCharacterRoster = new List<Character>();
-    public List<Character> TotalCharacterRoster { get { return _totalCharacterRoster; } }
+    private List<CombatHandler> _currentParty = new List<CombatHandler>();
+    private List<CombatHandler> _totalCharacterRoster = new List<CombatHandler>();
+    public List<CombatHandler> TotalCharacterRoster { get { return _totalCharacterRoster; } }
 
-    public List<Character> CurrentPartyList { get { return GetCurrentPartyAsList(); } }
-
-    private List<Character> GetCurrentPartyAsList()
-    {
-        List<Character> currentPartyAsList = new List<Character>();
-
-        for (int i = 0; i < _currentParty.Length; i++)
-        {
-            currentPartyAsList.Add(_currentParty[i]);
-        }
-
-        return currentPartyAsList;
-    }
-
-    public List<CombatHandler> CurrentPartyCombatList { get { return GetCurrentPartyAsCombatList(); } }
-
-    private List<CombatHandler> GetCurrentPartyAsCombatList()
-    {
-        List<CombatHandler> currentPartyAsCombatList = new List<CombatHandler>();
-
-        for (int i = 0; i < _currentParty.Length; i++)
-        {
-            CombatHandler combatHandler = _currentParty[i].GetComponent<CombatHandler>();
-            currentPartyAsCombatList.Add(combatHandler);
-        }
-
-        return currentPartyAsCombatList;
-    }
+    public List<CombatHandler> CurrentParty { get { return _currentParty; } }
 
     public void Initialize()
     {
@@ -59,17 +33,20 @@ public class PartyManager : MonoBehaviour
         {
             Destroy(this.gameObject);
         }
-
-        _currentParty = new Character[GameManager.Instance.UniversalData.MaxTeamSlots];
     }
 
-    public void AddCharacterToRoster(Character character)
+    public void SetCurrentParty(List<CombatHandler> party)
     {
-        _totalCharacterRoster.Add(character);
-        Debug.Log(character.CharacterData.Character.ToString() + " has been added to the roster.");
+        _currentParty = party;
     }
 
-    public Character AddCharacterToParty(Character character, int toIndex = -1)
+    public void AddFighterToRoster(CombatHandler fighter)
+    {
+        _totalCharacterRoster.Add(fighter);
+        Debug.Log(fighter.Character.CharacterData.Character.ToString() + " has been added to the roster.");
+    }
+
+    public CombatHandler AddCharacterToParty(CombatHandler character, int toIndex = -1)
     {
         //Adds the character to the party.
         //Adds them to the roster if they aren't present.
@@ -81,7 +58,7 @@ public class PartyManager : MonoBehaviour
 
         if (!_totalCharacterRoster.Contains(character))
         {
-            AddCharacterToRoster(character);
+            AddFighterToRoster(character);
         }
 
         if (toIndex < 0)
@@ -93,13 +70,13 @@ public class PartyManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("There's no space in the party to add " + character.CharacterData.Character.ToString() + " without switching out another party member.");
+                Debug.LogWarning("There's no space in the party to add " + character.Character.CharacterData.Character.ToString() + " without switching out another party member.");
                 return null;
             }
         }
         else
         {
-            Character characterAtSlot = _currentParty[toIndex];
+            CombatHandler characterAtSlot = _currentParty[toIndex];
             if (characterAtSlot == null)
             {
                 _currentParty[toIndex] = character;
@@ -114,7 +91,7 @@ public class PartyManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogWarning("Placing " + character.CharacterData.Character.ToString() + " in the party has switched out " + characterAtSlot.CharacterData.Character.ToString() + ". Returning character.");
+                    Debug.LogWarning("Placing " + character.Character.CharacterData.Character.ToString() + " in the party has switched out " + characterAtSlot.Character.CharacterData.Character.ToString() + ". Returning character.");
                     return characterAtSlot;
                 }
             }
@@ -126,7 +103,7 @@ public class PartyManager : MonoBehaviour
     private int GetEmptyPartySlot()
     {
         int emptySlot = -1;
-        for (int i = 0; i < _currentParty.Length; i++)
+        for (int i = 0; i < _currentParty.Count; i++)
         {
             if (_currentParty[i] == null)
             {

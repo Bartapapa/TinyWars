@@ -2,12 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Unity.VisualScripting.Member;
 using static UnityEngine.Rendering.DebugUI;
 
 public class TagHandler : MonoBehaviour
 {
     public List<Tag> Tags { get { return _tags; } }
-    [ReadOnlyInspector][SerializeField] private readonly List<Tag> _tags = new List<Tag>();
+    [SerializeField] private List<Tag> _tags = new List<Tag>();
 
     public bool HasTag(Enum tag)
     {
@@ -28,6 +29,16 @@ public class TagHandler : MonoBehaviour
     {
         Tag newTag = new Tag(tag.ToString(), source);
         _tags.Add(newTag);
+    }
+
+    public bool AddTagIfNotPresent(Enum tag, object source = null)
+    {
+        if (HasTag(tag)) return false;
+        else
+        {
+            AddTag(tag, source);
+            return true;
+        }
     }
 
     private void RemoveTagAt(int i)
@@ -59,6 +70,23 @@ public class TagHandler : MonoBehaviour
         for (int i = _tags.Count - 1; i >= 0; i--)
         {
             if (_tags[i].Source == source)
+            {
+                tagRemoved = true;
+                RemoveTagAt(i);
+            }
+        }
+
+        return tagRemoved;
+    }
+
+    public bool ClearTagsOfHandle(Enum tag)
+    {
+        bool tagRemoved = false;
+        string handle = tag.ToString();
+
+        for (int i = _tags.Count - 1; i >= 0; i--)
+        {
+            if (_tags[i].Handle == handle)
             {
                 tagRemoved = true;
                 RemoveTagAt(i);

@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _internalName: momBun_spawnLilBun
   _abilityName: Family gathering
+  _abilityDescription: description
   _abilityIcon: {fileID: 21300000, guid: 711dcb29f42d0f04b969bd7f4c15cbb2, type: 3}
   _listenedMessages: 02000000
-  _lvl1_abilityActions:
+  _abilityActions:
   - {fileID: 11400000, guid: 1c89e53db25343d49a3245cea5df6f83, type: 2}
   _canLevelUp: 1

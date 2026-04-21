@@ -8,7 +8,7 @@ public class Action_HealSelf : TWAction
     [Header("HEAL VALUE")]
     [SerializeField] private float _healValue = 1f;
 
-    public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets)
+    public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets, int actionLevel = 1)
     {
         Action_HealSelf newAction = CreateInstance<Action_HealSelf>();
         newAction._actionType = _actionType;

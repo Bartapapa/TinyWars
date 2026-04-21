@@ -19,5 +19,6 @@ public class TW_AH_C_Combat : TW_AH_Character
 
         Animator.SetBool("isMoving", _handler.IsMoving);
         Animator.SetBool("isDead", _handler.TagHandler.HasTag(CombatState.Dead));
+        Animator.SetBool("isGrabbed", _handler.TagHandler.HasTag(HolderState.Grabbed));
     }
 }

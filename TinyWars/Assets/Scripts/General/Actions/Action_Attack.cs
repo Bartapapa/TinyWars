@@ -7,7 +7,7 @@ using static UnityEngine.GraphicsBuffer;
 [CreateAssetMenu(menuName = "TinyWars/Action/Attack", fileName = "Attack_ActionData")]
 public class Action_Attack : TWAction
 {
-    public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets)
+    public override TWAction GenerateAction(GameObject initiator, List<GameObject> targets, int actionLevel = 1)
     {
         Action_Attack newAction = CreateInstance<Action_Attack>();
         newAction._actionType = _actionType;
